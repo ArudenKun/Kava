@@ -1,0 +1,7 @@
+<Project>
+    <PropertyGroup>
+        <RootDir>$(MSBuildThisFileDirectory)</RootDir>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+</Project>

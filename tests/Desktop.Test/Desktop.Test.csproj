@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="TUnit" Version="0.1.783" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Core\Core.csproj" />
+    </ItemGroup>
+
+</Project>
+    
