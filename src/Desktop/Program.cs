@@ -1,7 +1,6 @@
 ﻿using System;
 using Avalonia;
 using Avalonia.Logging;
-using Avalonia.ReactiveUI;
 
 namespace Desktop;
 
@@ -35,5 +34,5 @@ public static class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().UseReactiveUI().LogToTrace();
+        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
 }

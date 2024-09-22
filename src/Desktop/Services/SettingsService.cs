@@ -8,36 +8,35 @@ using Core.Helpers;
 using Desktop.Models;
 using Desktop.Services.Abstractions;
 using LiteDB;
+using Material.Icons;
 
 namespace Desktop.Services;
 
 [INotifyPropertyChanged]
-public partial class SettingsService : SettingsBase, IDisposable, ISingleton
+public sealed partial class SettingsService : SettingsBase, IDisposable, ISingleton
 {
-    private readonly IDisposable _subscription;
+    private readonly IDisposable _saveIntervalSubscription;
     private readonly ILiteDatabase _liteDatabase;
 
     public SettingsService(ILiteDatabase liteDatabase)
         : base(EnvironmentHelper.AppDataDirectory.JoinPath("settings.json"), JsonContext.Default)
     {
         _liteDatabase = liteDatabase;
-        _subscription = Observable.Interval(TimeSpan.FromMinutes(5)).Skip(1).Subscribe(_ => Save());
+        _saveIntervalSubscription = Observable
+            .Interval(TimeSpan.FromMinutes(5))
+            .Skip(1)
+            .Subscribe(_ => Save());
     }
 
-    #region Backing Fields
-
-    private bool _isAutoUpdateEnabled = true;
-    private Theme _theme = Theme.System;
-
-    #endregion
-
-    #region Properties
+    private bool _isAutoUpdateEnabled;
 
     public bool IsAutoUpdateEnabled
     {
         get => _isAutoUpdateEnabled;
         set => SetProperty(ref _isAutoUpdateEnabled, value);
     }
+
+    private Theme _theme;
 
     public Theme Theme
     {
@@ -54,7 +53,14 @@ public partial class SettingsService : SettingsBase, IDisposable, ISingleton
             _ => ThemeVariant.Default,
         };
 
-    #endregion
+    [JsonIgnore]
+    public MaterialIconKind ThemeIconKind =>
+        Theme switch
+        {
+            Theme.Light => MaterialIconKind.WhiteBalanceSunny,
+            Theme.Dark => MaterialIconKind.MoonWaningCrescent,
+            _ => MaterialIconKind.ThemeLightDark,
+        };
 
     public override void Save()
     {
@@ -64,8 +70,7 @@ public partial class SettingsService : SettingsBase, IDisposable, ISingleton
 
     public void Dispose()
     {
-        GC.SuppressFinalize(this);
-        _subscription.Dispose();
+        _saveIntervalSubscription.Dispose();
         Save();
     }
 

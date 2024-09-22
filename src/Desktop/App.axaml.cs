@@ -7,8 +7,9 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Core.Extensions;
+using Avalonia.Styling;
 using Core.Helpers;
+using Desktop.Models;
 using Desktop.Services;
 using Desktop.Services.Abstractions;
 using Desktop.Services.Caching;
@@ -19,6 +20,7 @@ using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ServiceScan.SourceGenerator;
+using SukiUI;
 using Utf8StringInterpolation;
 using WebViewControl;
 using ZiggyCreatures.Caching.Fusion;
@@ -32,6 +34,8 @@ public sealed partial class App : Application, IDisposable
     private readonly SettingsService _settingsService;
 
     private readonly CompositeDisposable _subscriptions = new();
+
+    private static SukiTheme ThemeHelper => SukiTheme.GetInstance();
 
     public App()
     {
@@ -123,20 +127,25 @@ public sealed partial class App : Application, IDisposable
                 as Window;
         }
 
-        _settingsService
-            .WatchProperty(
-                x => x.Theme,
-                () => RequestedThemeVariant = _settingsService.ThemeVariant
-            )
-            .DisposeWith(_subscriptions);
+        ThemeHelper.OnBaseThemeChanged += variant =>
+        {
+            if (variant == ThemeVariant.Dark)
+            {
+                _settingsService.Theme = Theme.Dark;
+                return;
+            }
+
+            _settingsService.Theme = variant == ThemeVariant.Light ? Theme.Light : Theme.System;
+        };
 
         _settingsService.Load();
+
+        ThemeHelper.ChangeBaseTheme(_settingsService.ThemeVariant);
     }
 
     public void Dispose()
     {
         _subscriptions.Dispose();
-        _settingsService.Dispose();
         _services.Dispose();
     }
 
@@ -158,18 +167,6 @@ public sealed partial class App : Application, IDisposable
         AsSelf = true,
         AsImplementedInterfaces = true,
         Lifetime = ServiceLifetime.Singleton
-    )]
-    [GenerateServiceRegistrations(
-        AssignableTo = typeof(IScoped),
-        AsSelf = true,
-        AsImplementedInterfaces = true,
-        Lifetime = ServiceLifetime.Scoped
-    )]
-    [GenerateServiceRegistrations(
-        AssignableTo = typeof(ITransient),
-        AsSelf = true,
-        AsImplementedInterfaces = true,
-        Lifetime = ServiceLifetime.Transient
     )]
     private static partial void AddServices(IServiceCollection services);
 }

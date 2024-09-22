@@ -4,13 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SukiUI;
 
 namespace Desktop.ViewModels.Abstractions;
 
 [ObservableRecipient]
 public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 {
-    protected CompositeDisposable Disposables { get; } = new();
+    protected CompositeDisposable Subscriptions { get; } = new();
+
+    protected SukiTheme SukiTheme => SukiTheme.GetInstance();
 
     public void Loaded()
     {
@@ -79,7 +82,7 @@ public abstract partial class BaseViewModel : ObservableValidator, IViewModel
     public void Dispose()
     {
         Dispose(true);
-        Disposables.Dispose();
+        Subscriptions.Dispose();
         GC.SuppressFinalize(this);
     }
 }

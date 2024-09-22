@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Core.Extensions;
 using LiteDB;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
@@ -32,8 +35,7 @@ public sealed class LiteDbCache : ILiteDbCache
     private readonly ILiteCollection<LiteDbCacheEntry> _collection;
     private readonly ILogger<LiteDbCache> _logger;
 
-    private readonly Timer _cleanupTimer;
-    private readonly Timer _saveTimer;
+    private readonly CompositeDisposable _subscriptions = new();
 
     public LiteDbCache(
         ILiteDatabase db,
@@ -45,33 +47,26 @@ public sealed class LiteDbCache : ILiteDbCache
         _collection = db.GetCollection<LiteDbCacheEntry>(options.Value.CollectionName);
         _logger = logger;
 
-        _cleanupTimer = new Timer(
-            static state =>
+        Observable
+            .Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1))
+            .Subscribe(_ =>
             {
-                var @this = (LiteDbCache)state!;
-
-                @this._logger.ZLogInformation(
+                _logger.ZLogInformation(
                     $"Beginning background cleanup of expired SQLiteCache items"
                 );
-                @this.RemoveExpired();
-            },
-            this,
-            TimeSpan.Zero,
-            TimeSpan.FromMinutes(1)
-        );
+                RemoveExpired();
+            })
+            .DisposeWith(_subscriptions);
 
-        _saveTimer = new Timer(
-            static state =>
+        Observable
+            .Timer(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(1))
+            .Subscribe(_ =>
             {
-                var @this = (LiteDbCache)state!;
-                @this._logger.ZLogInformation($"Beginning background save of cache to disk");
-                @this._db.Checkpoint();
-                @this._logger.ZLogInformation($"Successful background save of cache to disk");
-            },
-            this,
-            TimeSpan.FromSeconds(5),
-            TimeSpan.FromSeconds(30)
-        );
+                _logger.ZLogInformation($"Beginning background save of cache to disk");
+                _db.Checkpoint();
+                _logger.ZLogInformation($"Successful background save of cache to disk");
+            })
+            .DisposeWith(_subscriptions);
     }
 
     public byte[]? Get(string key)
@@ -205,8 +200,7 @@ public sealed class LiteDbCache : ILiteDbCache
 
     public void Dispose()
     {
-        _cleanupTimer.Dispose();
-        _saveTimer.Dispose();
+        _subscriptions.Dispose();
         _db.Checkpoint();
     }
 

@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:helpers="using:Core.Helpers"
+    xmlns:material="using:Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:suki="using:SukiUI.Controls"
     xmlns:vm="using:Desktop.ViewModels"
@@ -16,6 +17,12 @@
     IsTitleBarVisible="True"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
+
+    <suki:SukiWindow.RightWindowTitleBarControls>
+        <ToggleButton Command="{Binding ChangeThemeCommand}">
+            <material:MaterialIcon Kind="{Binding IconKind}" />
+        </ToggleButton>
+    </suki:SukiWindow.RightWindowTitleBarControls>
 
     <Grid RowDefinitions="Auto,*">
         <StackPanel Grid.Row="0" Spacing="5">
