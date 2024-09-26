@@ -41,12 +41,12 @@ public sealed partial class ViewLocator
 
         void Loaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.Loaded();
+            viewModel?.OnLoaded();
         }
 
         void Unloaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.Unloaded();
+            viewModel?.OnUnloaded();
 
             control.Loaded -= Loaded;
             control.Unloaded -= Unloaded;
@@ -54,12 +54,12 @@ public sealed partial class ViewLocator
 
         void AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            viewModel.AttachedToVisualTree();
+            viewModel.OnAttachedToVisualTree();
         }
 
         void DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            viewModel.DetachedFromVisualTree();
+            viewModel.OnDetachedFromVisualTree();
 
             control.AttachedToVisualTree -= AttachedToVisualTree;
             control.DetachedFromVisualTree -= DetachedFromVisualTree;

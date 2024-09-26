@@ -82,11 +82,11 @@
           "System.Buffers": "4.5.1"
         }
       },
-      "System.Reactive": {
+      "R3": {
         "type": "Direct",
-        "requested": "[6.0.1, )",
-        "resolved": "6.0.1",
-        "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
+        "requested": "[1.2.8, )",
+        "resolved": "1.2.8",
+        "contentHash": "T6/x5LjuakbCn6xysdhjkJ9dgvziUaqcCLchYWZqH/ZBofWVFKa6iAWnu9csaF5Nuc2/I3vXNqtLFm6ERqh5pQ=="
       },
       "ZiggyCreatures.FusionCache": {
         "type": "Direct",

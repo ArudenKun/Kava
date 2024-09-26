@@ -1,7 +1,5 @@
 using System;
 using System.Net;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using AsyncImageLoader;
 using Avalonia;
 using Avalonia.Controls;
@@ -21,6 +19,7 @@ using Humanizer;
 using LiteDB;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using R3;
 using ServiceScan.SourceGenerator;
 using SukiUI;
 using Utf8StringInterpolation;

@@ -573,6 +573,11 @@
           "Microsoft.Testing.Platform": "1.4.0"
         }
       },
+      "R3": {
+        "type": "Transitive",
+        "resolved": "1.2.8",
+        "contentHash": "T6/x5LjuakbCn6xysdhjkJ9dgvziUaqcCLchYWZqH/ZBofWVFKa6iAWnu9csaF5Nuc2/I3vXNqtLFm6ERqh5pQ=="
+      },
       "System.Buffers": {
         "type": "Transitive",
         "resolved": "4.5.1",
@@ -582,11 +587,6 @@
         "type": "Transitive",
         "resolved": "8.0.0",
         "contentHash": "ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA=="
-      },
-      "System.Reactive": {
-        "type": "Transitive",
-        "resolved": "6.0.1",
-        "contentHash": "rHaWtKDwCi9qJ3ObKo8LHPMuuwv33YbmQi7TcUK1C264V3MFnOr5Im7QgCTdLniztP3GJyeiSg5x8NqYJFqRmg=="
       },
       "System.Threading.Channels": {
         "type": "Transitive",
@@ -647,7 +647,7 @@
           "Gress": "[2.1.1, )",
           "Humanizer": "[2.14.1, )",
           "LiteDB": "[5.0.21, )",
-          "System.Reactive": "[6.0.1, )",
+          "R3": "[1.2.8, )",
           "ZLogger": "[2.5.7, )",
           "ZiggyCreatures.FusionCache": "[1.4.0, )"
         }

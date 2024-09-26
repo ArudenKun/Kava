@@ -40,5 +40,5 @@ public static class Program
 
     // Avalonia configuration, don't remove; also used by visual designer.
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure<App>().UsePlatformDetect().LogToTrace();
+        AppBuilder.Configure<App>().UsePlatformDetect().UseR3().LogToTrace();
 }

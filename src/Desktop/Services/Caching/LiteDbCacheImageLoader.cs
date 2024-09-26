@@ -6,19 +6,19 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Core.Helpers;
 using Flurl.Http;
-using LiteDB;
 using Microsoft.Extensions.Logging;
+using ZiggyCreatures.Caching.Fusion;
 
 namespace Desktop.Services.Caching;
 
 public sealed class LiteDbCacheImageLoader : IAsyncImageLoader
 {
-    private readonly ILiteStorage<string> _fs;
+    private readonly IFusionCache _fusionCache;
     private readonly ILogger<LiteDbCacheImageLoader> _logger;
 
-    public LiteDbCacheImageLoader(ILiteDatabase db, ILogger<LiteDbCacheImageLoader> logger)
+    public LiteDbCacheImageLoader(IFusionCache fusionCache, ILogger<LiteDbCacheImageLoader> logger)
     {
-        _fs = db.FileStorage;
+        _fusionCache = fusionCache;
         _logger = logger;
     }
 
@@ -35,22 +35,20 @@ public sealed class LiteDbCacheImageLoader : IAsyncImageLoader
 
         try
         {
-            Bitmap bitmap;
-            if (!_fs.Exists(hashId))
+            var cachedImageBytes = await _fusionCache.TryGetAsync<byte[]>(hashId);
+            if (cachedImageBytes.HasValue)
             {
-                var externalBytes = await LoadDataFromExternalAsync(url).ConfigureAwait(false);
-                if (externalBytes is null)
-                    return null;
-
-                using var memoryStream = new MemoryStream(externalBytes);
-                _fs.Upload(hashId, $"image-cache-{hashId}", memoryStream);
-                bitmap = new Bitmap(memoryStream);
-                return bitmap;
+                using var cachedImageStream = new MemoryStream(cachedImageBytes);
+                return new Bitmap(cachedImageStream);
             }
 
-            await using var liteFileStream = _fs.OpenRead(hashId);
-            bitmap = new Bitmap(liteFileStream);
-            return bitmap;
+            var newImageBytes = await LoadDataFromExternalAsync(url).ConfigureAwait(false);
+            if (newImageBytes is null)
+                return null;
+
+            await _fusionCache.SetAsync(hashId, newImageBytes);
+            using var newImageStream = new MemoryStream(newImageBytes);
+            return new Bitmap(newImageStream);
         }
         catch (Exception)
         {

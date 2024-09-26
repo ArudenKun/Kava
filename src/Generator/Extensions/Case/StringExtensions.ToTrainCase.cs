@@ -18,10 +18,10 @@ public static partial class StringExtensions
             {
                 if (disableFrontDelimeter)
                 {
-                    return new char[] { char.ToUpperInvariant(s) };
+                    return [char.ToUpperInvariant(s)];
                 }
 
-                return new char[] { '-', char.ToUpperInvariant(s) };
+                return ['-', char.ToUpperInvariant(s)];
             }
         );
     }

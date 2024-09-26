@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reactive.Disposables;
-using System.Reactive.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Core.Extensions;
@@ -9,6 +7,7 @@ using LiteDB;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using R3;
 using ZLogger;
 
 namespace Desktop.Services.Caching;

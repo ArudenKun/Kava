@@ -1,47 +1,63 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using System.Threading;
 using System.Threading.Tasks;
+using AsyncAwaitBestPractices;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using SukiUI;
+using R3;
 
 namespace Desktop.ViewModels.Abstractions;
 
 [ObservableRecipient]
 public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 {
+    private readonly WeakEventManager _weakEventManager = new();
+
+    public event EventHandler? Loaded
+    {
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
+    }
+
+    public event EventHandler? Unloaded
+    {
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
+    }
+
+    public event EventHandler? AttachedToVisualTree
+    {
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
+    }
+
+    public event EventHandler? DetachedFromVisualTree
+    {
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
+    }
+
+    public virtual void OnLoaded()
+    {
+        _weakEventManager.RaiseEvent(nameof(Loaded));
+    }
+
+    public virtual void OnUnloaded()
+    {
+        _weakEventManager.RaiseEvent(nameof(Unloaded));
+    }
+
+    public virtual void OnAttachedToVisualTree()
+    {
+        _weakEventManager.RaiseEvent(nameof(AttachedToVisualTree));
+    }
+
+    public virtual void OnDetachedFromVisualTree()
+    {
+        _weakEventManager.RaiseEvent(nameof(DetachedFromVisualTree));
+    }
+
     protected CompositeDisposable Subscriptions { get; } = new();
-
-    protected SukiTheme SukiTheme => SukiTheme.GetInstance();
-
-    public void Loaded()
-    {
-        OnLoaded();
-    }
-
-    public void Unloaded()
-    {
-        OnUnloaded();
-    }
-
-    public void AttachedToVisualTree()
-    {
-        OnAttachedToVisualTree();
-    }
-
-    public void DetachedFromVisualTree()
-    {
-        OnDetachedFromVisualTree();
-    }
-
-    protected virtual void OnLoaded() { }
-
-    protected virtual void OnUnloaded() { }
-
-    protected virtual void OnAttachedToVisualTree() { }
-
-    protected virtual void OnDetachedFromVisualTree() { }
 
     /// <summary>
     /// Dispatches the specified action on the UI thread.

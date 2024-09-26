@@ -6,7 +6,7 @@ namespace Generator.Extensions.Case;
 
 public static partial class StringExtensions
 {
-    private static readonly char[] Delimeters = { ' ', '-', '_' };
+    private static readonly char[] Delimeters = [' ', '-', '_'];
 
     private static string SymbolsPipe(
         string source,

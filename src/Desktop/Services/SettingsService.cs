@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Linq;
 using System.Text.Json.Serialization;
 using Avalonia.Styling;
 using Cogwheel;
@@ -9,6 +8,7 @@ using Desktop.Models;
 using Desktop.Services.Abstractions;
 using LiteDB;
 using Material.Icons;
+using R3;
 
 namespace Desktop.Services;
 

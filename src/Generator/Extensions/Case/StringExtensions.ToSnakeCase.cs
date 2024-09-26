@@ -18,10 +18,10 @@ public static partial class StringExtensions
             {
                 if (disableFrontDelimeter)
                 {
-                    return new char[] { char.ToLowerInvariant(s) };
+                    return [char.ToLowerInvariant(s)];
                 }
 
-                return new char[] { '_', char.ToLowerInvariant(s) };
+                return ['_', char.ToLowerInvariant(s)];
             }
         );
     }

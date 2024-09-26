@@ -9,8 +9,12 @@ public interface IViewModel
         INotifyPropertyChanging,
         INotifyDataErrorInfo
 {
-    void Loaded();
-    void Unloaded();
-    void AttachedToVisualTree();
-    void DetachedFromVisualTree();
+    event EventHandler? Loaded;
+    event EventHandler? Unloaded;
+    event EventHandler? AttachedToVisualTree;
+    event EventHandler? DetachedFromVisualTree;
+    void OnLoaded();
+    void OnUnloaded();
+    void OnAttachedToVisualTree();
+    void OnDetachedFromVisualTree();
 }
