@@ -1,6 +1,7 @@
 using System;
 using System.Net;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AsyncImageLoader;
 using Avalonia;
 using Avalonia.Controls;
@@ -8,6 +9,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.Styling;
+using Core.Extensions;
 using Core.Helpers;
 using Desktop.Models;
 using Desktop.Services;
@@ -35,7 +37,7 @@ public sealed partial class App : Application, IDisposable
 
     private readonly CompositeDisposable _subscriptions = new();
 
-    private static SukiTheme ThemeHelper => SukiTheme.GetInstance();
+    private static SukiTheme SukiTheme => SukiTheme.GetInstance();
 
     public App()
     {
@@ -127,20 +129,26 @@ public sealed partial class App : Application, IDisposable
                 as Window;
         }
 
-        ThemeHelper.OnBaseThemeChanged += variant =>
-        {
-            if (variant == ThemeVariant.Dark)
+        Observable
+            .FromEvent<ThemeVariant>(
+                handler => SukiTheme.OnBaseThemeChanged += handler,
+                handler => SukiTheme.OnBaseThemeChanged -= handler
+            )
+            .Subscribe(variant =>
             {
-                _settingsService.Theme = Theme.Dark;
-                return;
-            }
+                if (variant == ThemeVariant.Dark)
+                {
+                    _settingsService.Theme = Theme.Dark;
+                    return;
+                }
 
-            _settingsService.Theme = variant == ThemeVariant.Light ? Theme.Light : Theme.System;
-        };
+                _settingsService.Theme = variant == ThemeVariant.Light ? Theme.Light : Theme.System;
+            })
+            .DisposeWith(_subscriptions);
 
         _settingsService.Load();
 
-        ThemeHelper.ChangeBaseTheme(_settingsService.ThemeVariant);
+        SukiTheme.ChangeBaseTheme(_settingsService.ThemeVariant);
     }
 
     public void Dispose()

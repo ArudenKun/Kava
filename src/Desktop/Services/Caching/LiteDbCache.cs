@@ -51,9 +51,7 @@ public sealed class LiteDbCache : ILiteDbCache
             .Timer(TimeSpan.Zero, TimeSpan.FromMinutes(1))
             .Subscribe(_ =>
             {
-                _logger.ZLogInformation(
-                    $"Beginning background cleanup of expired SQLiteCache items"
-                );
+                _logger.ZLogDebug($"Beginning background cleanup of expired LiteDbCache entries");
                 RemoveExpired();
             })
             .DisposeWith(_subscriptions);
@@ -62,9 +60,9 @@ public sealed class LiteDbCache : ILiteDbCache
             .Timer(TimeSpan.FromSeconds(5), TimeSpan.FromMinutes(1))
             .Subscribe(_ =>
             {
-                _logger.ZLogInformation($"Beginning background save of cache to disk");
+                _logger.ZLogDebug($"Beginning background save of cache to disk");
                 _db.Checkpoint();
-                _logger.ZLogInformation($"Successful background save of cache to disk");
+                _logger.ZLogDebug($"Successful background save of cache to disk");
             })
             .DisposeWith(_subscriptions);
     }
@@ -86,7 +84,7 @@ public sealed class LiteDbCache : ILiteDbCache
 
         RefreshInternal(key, now, entry);
 
-        _logger.ZLogInformation($"Successfully retrieved cache entry with key {key}");
+        _logger.ZLogDebug($"Successfully retrieved cache entry with key {key}");
 
         return entry.Value;
     }

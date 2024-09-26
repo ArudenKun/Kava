@@ -4,6 +4,8 @@ namespace Core.Helpers;
 
 public static class FileSystemHelper
 {
+    public const int DefaultBufferSize = 4096;
+
     public static string JoinPath(this string path, params string[] parts)
     {
         var paths = new List<string> { path };
@@ -30,10 +32,15 @@ public static class FileSystemHelper
             .FirstOrDefault(File.Exists);
     }
 
-    public static string GetParent(int levels, string currentPath)
+    public static string GetParent(string currentPath, int level = 1)
     {
+        if (level == 0)
+        {
+            level = 1;
+        }
+
         var path = "";
-        for (var i = 0; i < levels; i++)
+        for (var i = 0; i < level; i++)
             path += $"..{Path.DirectorySeparatorChar}";
 
         return Path.GetFullPath(Path.Combine(currentPath, path));
@@ -94,16 +101,18 @@ public static class FileSystemHelper
         return new string(output);
     }
 
-    public static FileStream OpenRead(string path, int bufferSize = 4096) =>
+    public static FileStream OpenRead(string path, int bufferSize = DefaultBufferSize) =>
         new(path, FileMode.Open, FileAccess.Read, FileShare.Read, bufferSize, true);
 
-    public static ValueTask<FileStream> OpenReadAsync(string path, int bufferSize = 4096) =>
-        ValueTask.FromResult(OpenRead(path, bufferSize));
+    public static ValueTask<FileStream> OpenReadAsync(
+        string path,
+        int bufferSize = DefaultBufferSize
+    ) => ValueTask.FromResult(OpenRead(path, bufferSize));
 
     public static FileStream OpenWrite(
         string filePath,
         bool overwrite = true,
-        int bufferSize = 4096
+        int bufferSize = DefaultBufferSize
     ) =>
         new(
             filePath,
@@ -117,6 +126,6 @@ public static class FileSystemHelper
     public static ValueTask<FileStream> OpenWriteAsync(
         string filePath,
         bool overwrite = true,
-        int bufferSize = 4096
+        int bufferSize = DefaultBufferSize
     ) => ValueTask.FromResult(OpenWrite(filePath, overwrite, bufferSize));
 }

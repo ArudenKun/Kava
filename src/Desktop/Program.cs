@@ -20,7 +20,13 @@ public static class Program
         }
         catch (Exception ex)
         {
-            Logger.Sink?.Log(LogEventLevel.Error, "Init", null, "Int Unhandled Exception {0}", ex);
+            Logger.Sink?.Log(
+                LogEventLevel.Error,
+                "Entry Point",
+                null,
+                "Unhandled Exception {0}",
+                ex
+            );
             throw;
         }
         finally

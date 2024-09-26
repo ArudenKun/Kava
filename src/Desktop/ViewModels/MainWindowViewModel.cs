@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reactive.Disposables;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -23,6 +22,8 @@ public sealed partial class MainWindowViewModel : BaseViewModel
     {
         _fusionCache = fusionCache;
 
+        IconKind = settingsService.ThemeIconKind;
+
         settingsService
             .WatchProperty(x => x.Theme, () => IconKind = settingsService.ThemeIconKind)
             .DisposeWith(Subscriptions);
@@ -42,5 +43,5 @@ public sealed partial class MainWindowViewModel : BaseViewModel
     }
 
     [RelayCommand]
-    private void ChangeTheme() => SukiTheme.GetInstance().SwitchBaseTheme();
+    private static void ChangeTheme() => SukiTheme.GetInstance().SwitchBaseTheme();
 }

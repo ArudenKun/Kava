@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Text;
 using Generator.Extensions;
-using Microsoft.CodeAnalysis;
 
 namespace Generator;
 
