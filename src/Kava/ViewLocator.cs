@@ -1,27 +1,66 @@
 using System;
+using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Templates;
-using Kava.ViewModels;
+using Avalonia.Interactivity;
+using Generator.Attributes;
+using Kava.ViewModels.Abstractions;
 
 namespace Kava;
 
-public class ViewLocator : IDataTemplate
+[StaticViewLocator]
+public sealed partial class ViewLocator
 {
-    public Control? Build(object? data)
+    public Control? Build(object? viewModel)
     {
-        if (data is null)
+        if (viewModel is null)
             return null;
 
-        var name = data.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-        var type = Type.GetType(name);
+        var viewModelType = viewModel.GetType();
 
-        if (type != null)
-        {
-            return (Control)Activator.CreateInstance(type)!;
-        }
+        if (!ViewMap.TryGetValue(viewModelType, out var factory))
+            return new TextBlock { Text = $"No view registered for {viewModelType.FullName}" };
 
-        return new TextBlock { Text = "Not Found: " + name };
+        var control = factory(viewModel);
+        control.DataContext = viewModel;
+        RegisterEvents((IViewModel)viewModel, control);
+        return control;
     }
 
-    public bool Match(object? data) => data is ViewModelBase;
+    public bool Match(object? data) => data is IViewModel;
+
+    private static void RegisterEvents(IViewModel viewModel, Control control)
+    {
+        control = control ?? throw new ArgumentNullException(nameof(control));
+
+        control.Loaded += Loaded;
+        control.Unloaded += Unloaded;
+        control.AttachedToVisualTree += AttachedToVisualTree;
+        control.DetachedFromVisualTree += DetachedFromVisualTree;
+
+        void Loaded(object? sender, RoutedEventArgs e)
+        {
+            viewModel?.OnLoaded();
+        }
+
+        void Unloaded(object? sender, RoutedEventArgs e)
+        {
+            viewModel?.OnUnloaded();
+
+            control.Loaded -= Loaded;
+            control.Unloaded -= Unloaded;
+        }
+
+        void AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            viewModel.OnAttachedToVisualTree();
+        }
+
+        void DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
+        {
+            viewModel.OnDetachedFromVisualTree();
+
+            control.AttachedToVisualTree -= AttachedToVisualTree;
+            control.DetachedFromVisualTree -= DetachedFromVisualTree;
+        }
+    }
 }

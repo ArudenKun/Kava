@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Kava.Services.Abstractions.Factories;
 using Kava.Services.Factories;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,9 +9,11 @@ namespace Kava.Services;
 
 public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddFactory<TService, TImplementation>(
-        this IServiceCollection services
-    )
+    public static IServiceCollection AddFactory<
+        TService,
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+            TImplementation
+    >(this IServiceCollection services)
         where TService : class
         where TImplementation : class, TService
     {
@@ -21,7 +24,10 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddFactory<TImplementation>(this IServiceCollection services)
+    public static IServiceCollection AddFactory<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+            TImplementation
+    >(this IServiceCollection services)
         where TImplementation : class
     {
         services.TryAddTransient<TImplementation>();

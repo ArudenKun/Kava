@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Kava.Data;
-using Kava.Helpers;
-using Kava.Models;
+using Kava.Core.Data;
+using Kava.Core.Helpers;
+using Kava.Core.Models.Entities;
 using Kava.Services.Abstractions;
-using Kava.Services.Abstractions.Factories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,13 +14,15 @@ namespace Kava.Services;
 
 public class BoardService : ISingletonService
 {
-    private readonly IServiceScopeFactory _serviceScopeFactory;
-    private readonly IFileDbFactory _fileDbFactory;
+    private static readonly string FileDbPath = EnvironmentHelper.AppDataDirectory.JoinPath(
+        "files.db"
+    );
 
-    public BoardService(IServiceScopeFactory serviceScopeFactory, IFileDbFactory fileDbFactory)
+    private readonly IServiceScopeFactory _serviceScopeFactory;
+
+    public BoardService(IServiceScopeFactory serviceScopeFactory)
     {
         _serviceScopeFactory = serviceScopeFactory;
-        _fileDbFactory = fileDbFactory;
     }
 
     public async Task AddBoardAsync(Board board)
@@ -63,10 +64,9 @@ public class BoardService : ISingletonService
         Stream attachmentStream
     )
     {
-        using var fileDb = _fileDbFactory.Create(FileAccess.Write);
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var entryInfo = fileDb.Store(attachmentName, attachmentStream);
+        var entryInfo = FileDb.Store(FileDbPath, attachmentName, attachmentStream);
         var attachment = new Attachment
         {
             Id = new Ulid(entryInfo.ID),
@@ -89,8 +89,7 @@ public class BoardService : ISingletonService
     {
         destinationDirectory ??= EnvironmentHelper.DownloadsDirectory;
         var attachmentPath = destinationDirectory.JoinPath(attachment.Name);
-        using var fileDb = _fileDbFactory.Create(FileAccess.Read);
-        _ = fileDb.Read(attachment.Id.ToGuid(), attachmentPath);
+        FileDb.Read(FileDbPath, attachment.Id.ToGuid(), attachmentPath);
         return ValueTask.CompletedTask;
     }
 
@@ -112,12 +111,11 @@ public class BoardService : ISingletonService
 
     public async Task<bool> DeleteAttachmentAsync(Attachment attachment)
     {
-        using var fileDb = _fileDbFactory.Create(FileAccess.Write);
         await using var scope = _serviceScopeFactory.CreateAsyncScope();
         await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        var deleted = fileDb.Delete(attachment.Id.ToGuid());
-        fileDb.Shrink();
+        var deleted = FileDb.Delete(FileDbPath, attachment.Id.ToGuid());
+        FileDb.Shrink(FileDbPath);
 
         db.Attachments.Remove(attachment);
         await db.SaveChangesAsync();
