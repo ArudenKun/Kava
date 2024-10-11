@@ -6,14 +6,17 @@ using Humanizer;
 using JetBrains.Annotations;
 using Kava.Core.Helpers;
 using Kava.Hosting;
+using Kava.ViewModels.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using ServiceScan.SourceGenerator;
 using Utf8StringInterpolation;
 using ZLogger;
 
 namespace Kava;
 
-internal static class Program
+internal static partial class Program
 {
     // Initialization code. Don't use any Avalonia, third-party APIs or any
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
@@ -27,7 +30,6 @@ internal static class Program
     {
         var builder = Host.CreateApplicationBuilder();
 
-        // config IConfiguration
         builder
             .Logging.ClearProviders()
             .SetMinimumLevel(LogLevel.Debug)
@@ -57,9 +59,11 @@ internal static class Program
                 (int)1.Gigabytes().Kilobytes
             );
 
-        builder.Services.AddAvaloniauiDesktopApplication<App>(appBuilder =>
-            appBuilder.UsePlatformDetect().UseR3().WithInterFont().LogToTrace()
-        );
+        builder
+            .Services.AddGeneratedServices()
+            .AddAvaloniauiDesktopApplication<App>(appBuilder =>
+                appBuilder.UsePlatformDetect().UseR3().WithInterFont().LogToTrace()
+            );
 
         using var host = builder.Build();
         host.RunAvaloniaApplication(args);
@@ -73,4 +77,14 @@ internal static class Program
             .UsePlatformDetect()
             .WithInterFont()
             .LogToTrace();
+
+    [GenerateServiceRegistrations(
+        AssignableTo = typeof(IViewModel),
+        Lifetime = ServiceLifetime.Transient,
+        AsSelf = true,
+        AsImplementedInterfaces = true
+    )]
+    public static partial IServiceCollection AddGeneratedServices(
+        this IServiceCollection serviceProvider
+    );
 }

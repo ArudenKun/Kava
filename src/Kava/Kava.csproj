@@ -7,20 +7,16 @@
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
         <PublishAot>true</PublishAot>
-        <OptimizationPreference>Speed</OptimizationPreference>
+        <OptimizationPreference>Size</OptimizationPreference>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+        <NoWarn>$(NoWarn);AVLN3001</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-        <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
     </ItemGroup>
 
     <ItemGroup>
-<!--        <RdXmlFile Include="Properties\Avalonia.rd.xml" />-->
-        <RdXmlFile Include="Properties\Microsoft.EntityFrameworkCore.rd.xml" />
-        <RdXmlFile Include="Properties\Microsoft.EntityFrameworkCore.Sqlite.rd.xml" />
-        <RdXmlFile Include="Properties\System.Linq.Queryable.rd.xml" />
         <TrimmerRootDescriptor Include="Roots.xml" />
     </ItemGroup>
 
@@ -35,6 +31,10 @@
         <PackageReference Include="Material.Icons.Avalonia" Version="2.1.10" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
         <PackageReference Include="R3Extensions.Avalonia" Version="1.2.9" />
+        <PackageReference Include="ServiceScan.SourceGenerator" Version="1.2.5">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>

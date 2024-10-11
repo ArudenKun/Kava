@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Kava.Core.Data;
 
-[RequiresUnreferencedCode("Uses unreferenced code")]
-[RequiresDynamicCode("Uses dynamic code")]
+[RequiresUnreferencedCode("Calls DbContext Ctor")]
+[RequiresDynamicCode("Calls DbContext Ctor")]
 public sealed class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     private static readonly TimestampInterceptor TimestampInterceptor = new();

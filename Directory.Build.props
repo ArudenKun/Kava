@@ -1,5 +1,12 @@
 <Project>
-  <PropertyGroup>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <RootDir>$(MSBuildThisFileDirectory)</RootDir>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+        <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+    </PropertyGroup>
+    
+    <PropertyGroup Condition="$(Configuration.Contains('Release'))">
+        <DebugType>none</DebugType>
+        <DebugSymbols>false</DebugSymbols>
+    </PropertyGroup>
 </Project>

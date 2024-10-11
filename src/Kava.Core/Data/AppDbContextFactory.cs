@@ -12,7 +12,7 @@ public sealed class AppDbContextFactory : IDesignTimeDbContextFactory<AppDbConte
     {
         var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
 
-        optionsBuilder.UseSqlite(@"Data Source=C:\Users\alden\AppData\Roaming\Kava\data.debug.db");
+        optionsBuilder.UseSqlite("DataSource=:memory:");
 
         return new AppDbContext(optionsBuilder.Options);
     }

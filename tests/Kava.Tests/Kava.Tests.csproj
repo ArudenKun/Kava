@@ -28,5 +28,9 @@
         <Using Include="Moq.AutoMock"/>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\src\Kava\Kava.csproj" />
+    </ItemGroup>
+
 
 </Project>

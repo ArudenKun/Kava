@@ -1,6 +1,8 @@
-﻿namespace Kava.ViewModels;
+﻿using Kava.ViewModels.Abstractions;
 
-public partial class MainWindowViewModel : ViewModelBase
+namespace Kava.ViewModels;
+
+public partial class MainWindowViewModel : BaseViewModel
 {
 #pragma warning disable CA1822 // Mark members as static
     public string Greeting => "Welcome to Avalonia!";
