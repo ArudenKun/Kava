@@ -4,15 +4,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using Gress;
 
-namespace Kava.Extensions;
+namespace Kava.Utilities.Extensions;
 
 public static class StreamExtensions
 {
+    public const int DefaultBufferSize = 4096;
+
     public static void CopyTo(
         this Stream source,
         Stream destination,
         long totalLength = 0L,
-        int bufferSize = 81920,
+        int bufferSize = DefaultBufferSize,
         IProgress<Percentage>? progress = null
     ) => source.CopyTo(destination, totalLength, bufferSize, progress?.ToDoubleBased());
 
@@ -20,7 +22,7 @@ public static class StreamExtensions
         this Stream source,
         Stream destination,
         long totalLength = 0L,
-        int bufferSize = 81920,
+        int bufferSize = DefaultBufferSize,
         IProgress<double>? progress = null
     )
     {
@@ -44,7 +46,7 @@ public static class StreamExtensions
         this Stream source,
         Stream destination,
         long totalLength = 0L,
-        int bufferSize = 81920,
+        int bufferSize = DefaultBufferSize,
         IProgress<Percentage>? progress = null,
         CancellationToken cancellationToken = default
     ) =>
@@ -60,7 +62,7 @@ public static class StreamExtensions
         this Stream source,
         Stream destination,
         long totalLength = 0L,
-        int bufferSize = 81920,
+        int bufferSize = DefaultBufferSize,
         IProgress<double>? progress = null,
         CancellationToken cancellationToken = default
     )

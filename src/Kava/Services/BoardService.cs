@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Kava.Core.Models;
 using Kava.Data;
-using Kava.Helpers;
 using Kava.Services.Abstractions;
+using Kava.Utilities.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 

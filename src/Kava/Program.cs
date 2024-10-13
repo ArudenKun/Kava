@@ -7,9 +7,9 @@ using JetBrains.Annotations;
 using Kava.AppSettingsGen;
 using Kava.Data;
 using Kava.Data.Compiled;
-using Kava.Helpers;
 using Kava.Hosting;
 using Kava.Services.Abstractions;
+using Kava.Utilities.Helpers;
 using Kava.ViewModels.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -91,7 +91,7 @@ internal static partial class Program
                         .UseModel(AppDbContextModel.Instance)
             )
             .AddAvaloniauiDesktopApplication<App>(appBuilder =>
-                appBuilder.UsePlatformDetect().UseR3().LogToTrace()
+                appBuilder.UsePlatformDetect().LogToTrace()
             );
 
         using var host = builder.Build();

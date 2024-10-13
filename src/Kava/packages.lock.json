@@ -181,25 +181,11 @@
           "Microsoft.Extensions.Configuration.Json": "8.0.0"
         }
       },
-      "ObservableCollections.R3": {
+      "ObservableCollections": {
         "type": "Direct",
         "requested": "[3.1.1, )",
         "resolved": "3.1.1",
-        "contentHash": "MqHxWr3eOj7nFnQs0ZiQe3J0YqSycgsPxItUgc6L5ORj4j8T8RMIXwc/6h7Pzle2TOYO7VZuqmHyzZzOZuRaEQ==",
-        "dependencies": {
-          "ObservableCollections": "3.1.1",
-          "R3": "1.0.0"
-        }
-      },
-      "R3Extensions.Avalonia": {
-        "type": "Direct",
-        "requested": "[1.2.9, )",
-        "resolved": "1.2.9",
-        "contentHash": "SQL3gDHUdUb5H7vE4dM7PUo6iMxcazCGNvvA/mk6kA2Vy6XnEjRmyWzVwppuj6EsDMuNQjWn0jHnDSZ9cVuRcg==",
-        "dependencies": {
-          "Avalonia": "11.0.0",
-          "R3": "1.2.9"
-        }
+        "contentHash": "AN4F5vsl+yqUkurjXxNGdUDpe6gSKkAIiy6HfmHNusfrLeEgcFzi3ZFKSgynErONGA4UD9wTlDh/Z+90ilRDXQ=="
       },
       "ServiceScan.SourceGenerator": {
         "type": "Direct",
@@ -834,16 +820,6 @@
         "dependencies": {
           "System.CodeDom": "4.4.0"
         }
-      },
-      "ObservableCollections": {
-        "type": "Transitive",
-        "resolved": "3.1.1",
-        "contentHash": "AN4F5vsl+yqUkurjXxNGdUDpe6gSKkAIiy6HfmHNusfrLeEgcFzi3ZFKSgynErONGA4UD9wTlDh/Z+90ilRDXQ=="
-      },
-      "R3": {
-        "type": "Transitive",
-        "resolved": "1.2.9",
-        "contentHash": "dKMFt90XW+n7JK2P40dx9uuLg57Pcj4cA/9n1NwdKWFcMAM6j49OU8h9EborpVe4KXI+2MV/EjKc1LG7fhQJUA=="
       },
       "ReactiveUI": {
         "type": "Transitive",

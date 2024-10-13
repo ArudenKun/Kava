@@ -1,8 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <linker>
-<!--    <assembly fullname="Kava.Core" preserve="All"/>-->
     <assembly fullname="Microsoft.EntityFrameworkCore" preserve="All"/>
     <assembly fullname="Microsoft.EntityFrameworkCore.Sqlite" preserve="All"/>
-    <assembly fullname="Microsoft.Web.WebView2.Core" preserve="All"/>
-    <assembly fullname="WebView.Avalonia" preserve="All"/>
+<!--    <assembly fullname="Microsoft.Web.WebView2.Core" preserve="All"/>-->
+    <assembly fullname="CefGlue.Avalonia" preserve="All"/>
 </linker>

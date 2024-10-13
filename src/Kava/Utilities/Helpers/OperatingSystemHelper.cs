@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Kava.Helpers;
+namespace Kava.Utilities.Helpers;
 
 public enum Platform
 {

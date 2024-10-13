@@ -1,8 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Generator.ObservableEvents;
-using Kava.Extensions;
 using Material.Icons;
-using R3;
 
 namespace Kava.ViewModels.Abstractions;
 
@@ -16,12 +13,7 @@ public abstract partial class BasePageViewModel : BaseViewModel, IPageViewModel
 
     protected BasePageViewModel()
     {
-        this.Events()
-            .AttachedToVisualTree.Subscribe(_ => IsPageActive = true)
-            .DisposeWith(Subscriptions);
-
-        this.Events()
-            .DetachedFromVisualTree.Subscribe(_ => IsPageActive = false)
-            .DisposeWith(Subscriptions);
+        AttachedToVisualTree += _ => IsPageActive = true;
+        DetachedFromVisualTree += _ => IsPageActive = false;
     }
 }

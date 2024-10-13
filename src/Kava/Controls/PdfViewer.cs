@@ -4,8 +4,8 @@ using Xilium.CefGlue.Avalonia;
 
 namespace Kava.Controls;
 
-[DependencyProperty("PdfFile", typeof(string))]
-public partial class PdfViewer : ContentControl
+[DependencyProperty<string>("PdfFile")]
+public sealed partial class PdfViewer : ContentControl
 {
     private const string BlankPage = "about:blank";
     private readonly AvaloniaCefBrowser _browser = new();

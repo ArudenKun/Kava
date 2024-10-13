@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 
-namespace Kava.Helpers;
+namespace Kava.Utilities.Helpers;
 
 public static class EnvironmentHelper
 {

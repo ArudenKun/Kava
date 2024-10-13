@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace Kava.Helpers;
+namespace Kava.Utilities.Helpers;
 
 [SuppressMessage("ReSharper", "InconsistentNaming")]
 public static class MD5HashHelper

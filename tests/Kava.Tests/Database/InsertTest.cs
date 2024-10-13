@@ -1,6 +1,6 @@
 ﻿using System.Globalization;
 using Kava.Core.Models;
-using Kava.Helpers;
+using Kava.Utilities.Helpers;
 using Xunit.Abstractions;
 
 namespace Kava.Tests.Database;

@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Kava.Helpers;
+namespace Kava.Utilities.Helpers;
 
 public static class FileSystemHelper
 {
