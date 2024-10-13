@@ -19,13 +19,14 @@
         <suki:SukiToastHost Manager="{Binding ToastManager}" />
     </suki:SukiWindow.Hosts>
 
-    <StackPanel>
+    <Grid RowDefinitions="Auto, *">
         <TextBox
             HorizontalAlignment="Center"
             Text="Test"
             VerticalAlignment="Center"
             Watermark="youtube.com" />
 
-    </StackPanel>
+        <PdfViewer Grid.Row="1" Name="PdfViewer" />
+    </Grid>
 
 </suki:SukiWindow>

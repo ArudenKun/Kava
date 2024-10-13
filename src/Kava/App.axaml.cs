@@ -10,6 +10,8 @@ using Kava.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Xilium.CefGlue;
+using Xilium.CefGlue.Common;
 using ZLogger;
 
 namespace Kava;
@@ -36,6 +38,15 @@ public class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
+
+        CefRuntimeLoader.Initialize(
+            new CefSettings
+            {
+                RootCachePath = EnvironmentHelper.AppDataDirectory.JoinPath("cef"),
+                CachePath = EnvironmentHelper.AppDataDirectory.JoinPath("cef"),
+                LogFile = EnvironmentHelper.AppDataDirectory.JoinPath("logs", "cef.log"),
+            }
+        );
 
         using var db = _dbContextFactory.CreateDbContext();
         db.Database.Migrate();

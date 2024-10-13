@@ -95,6 +95,7 @@ internal static partial class Program
             );
 
         using var host = builder.Build();
+
         host.RunAvaloniaApplicationAsync(args);
     }
 

@@ -1,3 +1,3 @@
 ﻿using Avalonia.Metadata;
 
-[assembly: XmlnsPrefix("https://github.com/avaloniaui", "Kava.Controls")]
+[assembly: XmlnsDefinition("https://github.com/avaloniaui", "Kava.Controls")]
