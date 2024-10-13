@@ -1,15 +1,19 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Kava.App"
-             xmlns:local="using:Kava"
-             RequestedThemeVariant="Default">
-             <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+<Application
+    RequestedThemeVariant="Default"
+    x:Class="Kava.App"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:local="using:Kava"
+    xmlns:materialIcons="using:Material.Icons.Avalonia"
+    xmlns:suki="using:SukiUI"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
 
     <Application.DataTemplates>
-        <local:ViewLocator/>
+        <local:ViewLocator />
     </Application.DataTemplates>
-  
+
     <Application.Styles>
-        <FluentTheme />
+        <suki:SukiTheme ThemeColor="Blue" />
+        <materialIcons:MaterialIconStyles />
     </Application.Styles>
 </Application>

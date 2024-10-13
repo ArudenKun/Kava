@@ -1,34 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Kava.Core.Data;
-using Kava.Core.Helpers;
-using Kava.Core.Models.Entities;
+using Kava.Core.Models;
+using Kava.Data;
+using Kava.Helpers;
 using Kava.Services.Abstractions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Kava.Services;
 
+[RequiresUnreferencedCode("Calls DbContext Ctor")]
 public class BoardService : ISingletonService
 {
     private static readonly string FileDbPath = EnvironmentHelper.AppDataDirectory.JoinPath(
         "files.db"
     );
 
-    private readonly IServiceScopeFactory _serviceScopeFactory;
+    private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
 
-    public BoardService(IServiceScopeFactory serviceScopeFactory)
+    public BoardService(
+        IServiceScopeFactory serviceScopeFactory,
+        IDbContextFactory<AppDbContext> dbContextFactory
+    )
     {
-        _serviceScopeFactory = serviceScopeFactory;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task AddBoardAsync(Board board)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         await db.AddAsync(board);
         await db.SaveChangesAsync();
@@ -36,15 +38,13 @@ public class BoardService : ISingletonService
 
     public async Task<Board?> GetBoardAsync(Ulid? boardId)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
         return await db.FindAsync<Board>(boardId);
     }
 
     public async Task<IReadOnlyList<Attachment>> GetBoardsAsync()
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
         return await db.Attachments.AsQueryable().ToListAsync();
     }
 
@@ -64,8 +64,7 @@ public class BoardService : ISingletonService
         Stream attachmentStream
     )
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
         var entryInfo = FileDb.Store(FileDbPath, attachmentName, attachmentStream);
         var attachment = new Attachment
         {
@@ -95,15 +94,13 @@ public class BoardService : ISingletonService
 
     public async Task<IReadOnlyList<Attachment>> GetAttachmentsAsync(Card card)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
         return await db.Attachments.AsQueryable().Where(x => x.CardId == card.Id).ToListAsync();
     }
 
     public async Task UpdateAttachmentAsync(Attachment attachment)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         db.Update(attachment);
         await db.SaveChangesAsync();
@@ -111,8 +108,7 @@ public class BoardService : ISingletonService
 
     public async Task<bool> DeleteAttachmentAsync(Attachment attachment)
     {
-        await using var scope = _serviceScopeFactory.CreateAsyncScope();
-        await using var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         var deleted = FileDb.Delete(FileDbPath, attachment.Id.ToGuid());
         FileDb.Shrink(FileDbPath);

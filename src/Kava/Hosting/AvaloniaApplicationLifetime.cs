@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -14,18 +13,18 @@ public sealed class AvaloniaApplicationLifetime<TApplication> : IHostLifetime
 {
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly TaskCompletionSource<object> _applicationExited = new();
-    private readonly IServiceProvider _provider;
+    private readonly IServiceProvider _serviceProvider;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="AvaloniaApplicationLifetime{TApplication}"/> class.
     /// </summary>
     public AvaloniaApplicationLifetime(
         IHostApplicationLifetime applicationLifetime,
-        IServiceProvider provider
+        IServiceProvider serviceProvider
     )
     {
         _applicationLifetime = applicationLifetime;
-        _provider = provider;
+        _serviceProvider = serviceProvider;
     }
 
     /// <inheritdoc />
@@ -36,7 +35,7 @@ public sealed class AvaloniaApplicationLifetime<TApplication> : IHostLifetime
             () => ready.TrySetCanceled(cancellationToken)
         );
 
-        var application = _provider.GetRequiredService<TApplication>();
+        var application = _serviceProvider.GetRequiredService<TApplication>();
 
         if (application.ApplicationLifetime is IControlledApplicationLifetime desktopLifetime)
         {

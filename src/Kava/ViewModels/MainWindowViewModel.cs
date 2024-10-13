@@ -1,10 +1,11 @@
 ﻿using Kava.ViewModels.Abstractions;
+using SukiUI.Dialogs;
+using SukiUI.Toasts;
 
 namespace Kava.ViewModels;
 
 public partial class MainWindowViewModel : BaseViewModel
 {
-#pragma warning disable CA1822 // Mark members as static
-    public string Greeting => "Welcome to Avalonia!";
-#pragma warning restore CA1822 // Mark members as static
+    public ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
+    public ISukiToastManager ToastManager { get; } = new SukiToastManager();
 }

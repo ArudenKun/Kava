@@ -86,11 +86,11 @@
         "resolved": "3.0.271",
         "contentHash": "I7e5kx5prSV99g+rM/xO5KMhwBQL/b+NlUY76RhbutXJ0tgiuMoqgOFnlTHOxCLrlKmwaMzp3VI8oz05PSlcIA=="
       },
-      "PolyShim": {
+      "PolySharp": {
         "type": "Direct",
-        "requested": "[1.13.0, )",
-        "resolved": "1.13.0",
-        "contentHash": "TaYJAh9gJanuX5z7Q1hsuiKmWTEgeQ9bpyfmo6DXE35uLoXyk1lNga2r3pH0mMMwjupFuFB/r4PrGtksP1Z1yg=="
+        "requested": "[1.14.1, )",
+        "resolved": "1.14.1",
+        "contentHash": "mOOmFYwad3MIOL14VCjj02LljyF1GNw1wP0YVlxtcPvqdxjGGMNdNJJxHptlry3MOd8b40Flm8RPOM8JOlN2sQ=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",

@@ -1,4 +1,5 @@
-﻿using Kava.Core.Data;
+﻿using Kava.Data;
+using Kava.Data.Interceptors;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Moq.AutoMock.Resolvers;
@@ -49,6 +50,7 @@ public static class AutoMockerExtensions
         public AppDbContext CreateDbContext()
         {
             var builder = new DbContextOptionsBuilder<AppDbContext>()
+                .AddInterceptors(new TimestampInterceptor())
                 .EnableDetailedErrors()
                 .EnableSensitiveDataLogging()
                 .UseSqlite(_sqliteConnection.Value);

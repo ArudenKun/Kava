@@ -1,5 +1,4 @@
-﻿using System;
-using Kava.Services.Abstractions.Factories;
+﻿using Kava.Services.Abstractions.Factories;
 
 namespace Kava.Services.Factories;
 

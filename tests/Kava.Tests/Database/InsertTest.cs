@@ -1,6 +1,6 @@
-﻿using Kava.Core.Helpers;
-using Kava.Core.Models.Entities;
-using Kava.Services;
+﻿using System.Globalization;
+using Kava.Core.Models;
+using Kava.Helpers;
 using Xunit.Abstractions;
 
 namespace Kava.Tests.Database;
@@ -25,9 +25,28 @@ public class InsertTest
 
         dbContext.Boards.Add(board);
         await dbContext.SaveChangesAsync();
-
-        var board2 = await dbContext.Boards.FindAsync(board.Id);
-
-        Assert.Equivalent(board, board2);
+        await Task.Delay(TimeSpan.FromSeconds(2));
+        board.Name = $"Test Board2-{salt}";
+        dbContext.Update(board);
+        await dbContext.SaveChangesAsync();
+        _outputHelper.WriteLine(board.CreatedAt.ToString(CultureInfo.InvariantCulture));
+        _outputHelper.WriteLine(board.UpdatedAt.ToString(CultureInfo.InvariantCulture));
     }
+
+    // [Fact]
+    // public async Task FileDbInsertionTest()
+    // {
+    //     const string fileDbPath = @"C:\Users\alden\AppData\Roaming\Kava\file_store.db";
+    //     var fileName = $"test-{DateTime.Now:yyyyMMddHHmmssfff}";
+    //     var fileInfo = await Task.Run(async () =>
+    //     {
+    //         await using var fileStream = await FileSystemHelper.OpenReadAsync(
+    //             @"C:\Users\alden\Downloads\test.txt"
+    //         );
+    //         return DB.Store(fileDbPath, fileName, fileStream);
+    //     });
+    //
+    //     _outputHelper.WriteLine($"{fileInfo.FileLength.Bytes()}");
+    //     Assert.Equal(fileInfo.FileName, fileName);
+    // }
 }

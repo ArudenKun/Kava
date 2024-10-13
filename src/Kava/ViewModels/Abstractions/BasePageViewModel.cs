@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using Generator.ObservableEvents;
-using Kava.Core.Extensions;
+using Kava.Extensions;
 using Material.Icons;
 using R3;
 

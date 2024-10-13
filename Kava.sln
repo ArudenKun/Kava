@@ -23,6 +23,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{BC37B36D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kava.Tests", "tests\Kava.Tests\Kava.Tests.csproj", "{7C05F5BE-DA8F-48C2-B73B-53A5AF501860}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{4A52A72F-7234-41C4-A293-DD670ECB1814}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SukiUI", "external\SukiUI\SukiUI\SukiUI.csproj", "{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{C58FD4A5-9B13-4A15-89DA-327CE7C2F78D}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\ef-migrations.ps1 = scripts\ef-migrations.ps1
+		scripts\publish-aot.ps1 = scripts\publish-aot.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +55,10 @@ Global
 		{7C05F5BE-DA8F-48C2-B73B-53A5AF501860}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C05F5BE-DA8F-48C2-B73B-53A5AF501860}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C05F5BE-DA8F-48C2-B73B-53A5AF501860}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{853AB401-440B-48BA-A708-5DF93E981829} = {D5D48DE5-DB16-42B7-827B-32DD95E62FBA}
@@ -52,5 +66,7 @@ Global
 		{460711C7-A245-4FF9-9DF9-81DC99F47CC9} = {D5D48DE5-DB16-42B7-827B-32DD95E62FBA}
 		{FC31FC89-351C-4635-9F4A-4FC7A33615C8} = {D5D48DE5-DB16-42B7-827B-32DD95E62FBA}
 		{7C05F5BE-DA8F-48C2-B73B-53A5AF501860} = {BC37B36D-9D6E-4FDC-B247-69F2F278278F}
+		{E3DAD34F-BC87-47B4-8E59-FCF6077A0C1B} = {4A52A72F-7234-41C4-A293-DD670ECB1814}
+		{C58FD4A5-9B13-4A15-89DA-327CE7C2F78D} = {22BB095C-3487-49BD-897E-9DA190304290}
 	EndGlobalSection
 EndGlobal

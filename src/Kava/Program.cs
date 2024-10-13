@@ -1,12 +1,19 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Avalonia;
+using CommunityToolkit.Mvvm.Messaging;
 using Humanizer;
 using JetBrains.Annotations;
-using Kava.Core.Helpers;
+using Kava.AppSettingsGen;
+using Kava.Data;
+using Kava.Data.Compiled;
+using Kava.Helpers;
 using Kava.Hosting;
+using Kava.Services.Abstractions;
 using Kava.ViewModels.Abstractions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -25,14 +32,24 @@ internal static partial class Program
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("macos")]
-    [RequiresDynamicCode("Calls Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder()")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.Extensions.DependencyInjection.EntityFrameworkServiceCollectionExtensions.AddDbContextFactory<TContext>(Action<DbContextOptionsBuilder>, ServiceLifetime)"
+    )]
     public static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder();
 
+        builder.Environment.EnvironmentName = IsDebug
+            ? Environments.Development
+            : Environments.Production;
+
+        builder
+            .Configuration.AddJsonFile("appsettings.json", false, true)
+            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
+            .AddEnvironmentVariables();
+
         builder
             .Logging.ClearProviders()
-            .SetMinimumLevel(LogLevel.Debug)
             .AddZLoggerConsole(options =>
             {
                 options.OutputEncodingToUtf8 = false;
@@ -54,29 +71,37 @@ internal static partial class Program
                     EnvironmentHelper.AppDataDirectory.JoinPath(
                         "logs",
                         $"logs-{dt.ToLocalTime():dd-MM-yyyy}-{index}.log"
-                    // $"logs-{dt:dd-MM-yyyy}-{index}.log"
                     ),
                 (int)1.Gigabytes().Kilobytes
             );
 
         builder
+            .Services.AddSingleton<IAppSettingsBinder, AppSettingsBinder>()
+            .AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+
+        builder
             .Services.AddGeneratedServices()
+            .AddDbContextFactory<AppDbContext>(
+                (sp, optionsBuilder) =>
+                    optionsBuilder
+                        .AddInterceptors(sp.GetServices<IInterceptor>())
+                        .UseSqlite(
+                            $"Data Source={EnvironmentHelper.AppDataDirectory.JoinPath("data.db")}"
+                        )
+                        .UseModel(AppDbContextModel.Instance)
+            )
             .AddAvaloniauiDesktopApplication<App>(appBuilder =>
-                appBuilder.UsePlatformDetect().UseR3().WithInterFont().LogToTrace()
+                appBuilder.UsePlatformDetect().UseR3().LogToTrace()
             );
 
         using var host = builder.Build();
-        host.RunAvaloniaApplication(args);
+        host.RunAvaloniaApplicationAsync(args);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     [UsedImplicitly]
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder
-            .Configure(() => new Application())
-            .UsePlatformDetect()
-            .WithInterFont()
-            .LogToTrace();
+        AppBuilder.Configure(() => new Application()).UsePlatformDetect().LogToTrace();
 
     [GenerateServiceRegistrations(
         AssignableTo = typeof(IViewModel),
@@ -84,7 +109,26 @@ internal static partial class Program
         AsSelf = true,
         AsImplementedInterfaces = true
     )]
-    public static partial IServiceCollection AddGeneratedServices(
+    [GenerateServiceRegistrations(
+        AssignableTo = typeof(IInterceptor),
+        Lifetime = ServiceLifetime.Singleton,
+        AsSelf = true,
+        AsImplementedInterfaces = true
+    )]
+    [GenerateServiceRegistrations(
+        AssignableTo = typeof(ISingletonService),
+        Lifetime = ServiceLifetime.Singleton,
+        AsSelf = true,
+        AsImplementedInterfaces = true
+    )]
+    private static partial IServiceCollection AddGeneratedServices(
         this IServiceCollection serviceProvider
     );
+
+    private static bool IsDebug
+#if DEBUG
+        => true;
+#else
+        => false;
+#endif
 }

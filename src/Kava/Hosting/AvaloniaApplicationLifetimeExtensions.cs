@@ -1,5 +1,4 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +29,6 @@ public static class AvaloniaApplicationLifetimeExtensions
             {
                 var appBuilder = AppBuilder.Configure(provider.GetRequiredService<TApplication>);
                 appBuilder = appBuilderConfiguration(appBuilder);
-
                 return appBuilder;
             })
             .AddSingleton<IHostLifetime, AvaloniaApplicationLifetime<TApplication>>();
@@ -70,23 +68,20 @@ public static class AvaloniaApplicationLifetimeExtensions
     /// <param name="commandArgs">commandLine args</param>
     /// <param name="shutdownMode"><see cref="ShutdownMode"/></param>
     /// <param name="cancellationToken">cancellationToken</param>
-    public static Task RunAvaloniaApplication<TMainWindow>(
+    public static Task RunAvaloniaApplicationAsync<TMainWindow>(
         this IHost host,
         string[] commandArgs,
         ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose,
         CancellationToken cancellationToken = default
     )
-        where TMainWindow : Window
-    {
-        var mainWindowFactory = host.Services.GetRequiredService<TMainWindow>;
-        return RunAvaloniauiApplicationCore(
+        where TMainWindow : Window =>
+        RunAvaloniauiApplicationCore(
             host,
             commandArgs,
             shutdownMode,
-            mainWindowFactory,
+            host.Services.GetRequiredService<TMainWindow>,
             cancellationToken
         );
-    }
 
     /// <summary>
     ///  Runs the avaloniaui application along with the .NET generic host.
@@ -96,7 +91,7 @@ public static class AvaloniaApplicationLifetimeExtensions
     /// <param name="shutdownMode"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public static Task RunAvaloniaApplication(
+    public static Task RunAvaloniaApplicationAsync(
         this IHost host,
         string[] commandArgs,
         ShutdownMode shutdownMode = ShutdownMode.OnLastWindowClose,
@@ -121,7 +116,7 @@ public static class AvaloniaApplicationLifetimeExtensions
             }
         );
 
-        if (builder.Instance == null)
+        if (builder.Instance is null)
         {
             throw new InvalidOperationException("AppBuilder has not been initialized yet!");
         }
