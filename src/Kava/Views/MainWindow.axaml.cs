@@ -1,4 +1,3 @@
-using System.IO;
 using Avalonia.Interactivity;
 using SukiUI.Controls;
 
@@ -14,7 +13,6 @@ public partial class MainWindow : SukiWindow
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-
-        PdfViewer.PdfFile = @"C:\Users\alden\Downloads\Dada-Flight-Dec17-2024-MNL-CGO.pdf";
+        PdfViewer.PdfFile = ViewModel.PdfPath;
     }
 }

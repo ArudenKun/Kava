@@ -1,29 +1,29 @@
-﻿using Avalonia.Controls;
+﻿using System.IO;
+using Avalonia.Controls;
 using DependencyPropertyGenerator;
-using Xilium.CefGlue.Avalonia;
+using Kava.Controls.WebView;
 
 namespace Kava.Controls;
 
 [DependencyProperty<string>("PdfFile")]
 public sealed partial class PdfViewer : ContentControl
 {
-    private const string BlankPage = "about:blank";
-    private readonly AvaloniaCefBrowser _browser = new();
+    private static readonly Uri BlankPage = new("about:blank");
+    private readonly NativeWebView _webView = new();
 
     public PdfViewer()
     {
-        Content = _browser;
+        Content = _webView;
     }
 
     partial void OnPdfFileChanged(string? newValue)
     {
-        if (newValue is null || string.IsNullOrEmpty(newValue))
+        if (string.IsNullOrEmpty(newValue) || !File.Exists(newValue))
         {
-            _browser.Address = BlankPage;
-            SetValue(PdfFileProperty, null);
+            _webView.Navigate(BlankPage);
             return;
         }
 
-        _browser.Address = newValue;
+        _webView.Navigate(new Uri(newValue));
     }
 }

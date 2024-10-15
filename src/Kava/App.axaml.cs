@@ -4,14 +4,13 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Kava.Controls.WebView;
 using Kava.Data;
 using Kava.Utilities.Helpers;
 using Kava.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Xilium.CefGlue;
-using Xilium.CefGlue.Common;
 using ZLogger;
 
 namespace Kava;
@@ -39,18 +38,11 @@ public class App : Application
     {
         AvaloniaXamlLoader.Load(this);
 
-        CefRuntimeLoader.Initialize(
-            new CefSettings
-            {
-                RootCachePath = EnvironmentHelper.AppDataDirectory.JoinPath("cef"),
-                CachePath = EnvironmentHelper.AppDataDirectory.JoinPath("cef"),
-                LogFile = EnvironmentHelper.AppDataDirectory.JoinPath("logs", "cef.log"),
-            }
-        );
+        NativeWebView.SetFactory(() => new WebView2Adapter(EnvironmentHelper.AppDataDirectory));
 
-        using var db = _dbContextFactory.CreateDbContext();
-        db.Database.Migrate();
-        _logger.ZLogInformation($"Database Migration Complete");
+        // using var db = _dbContextFactory.CreateDbContext();
+        // db.Database.Migrate();
+        // _logger.ZLogInformation($"Database Migration Complete");
     }
 
     public override void OnFrameworkInitializationCompleted()

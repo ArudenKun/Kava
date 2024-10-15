@@ -8,7 +8,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Kava.Hosting;
+namespace Kava.Services.Hosting;
 
 public static class AvaloniaApplicationLifetimeExtensions
 {
@@ -108,6 +108,7 @@ public static class AvaloniaApplicationLifetimeExtensions
     {
         _ = host ?? throw new ArgumentNullException(nameof(host));
         var builder = host.Services.GetRequiredService<AppBuilder>();
+
         builder = builder.SetupWithLifetime(
             new ClassicDesktopStyleApplicationLifetime
             {

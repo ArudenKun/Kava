@@ -1,8 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 using AsyncAwaitBestPractices;
-using Avalonia;
-using Avalonia.Interactivity;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using Kava.Utilities;
@@ -14,88 +12,50 @@ namespace Kava.ViewModels.Abstractions;
 [ObservableRecipient]
 public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 {
-    // private readonly WeakEventManager _loadedEventManager = new();
-    // private readonly WeakEventManager _unloadedEventManager = new();
-    // private readonly WeakEventManager _attachedToVisualTreeEventManager = new();
-    // private readonly WeakEventManager _detachedFromVisualTreeEventManager = new();
-    //
-    // public event Action? Loaded
-    // {
-    //     add => _loadedEventManager.AddEventHandler(value);
-    //     remove => _loadedEventManager.RemoveEventHandler(value);
-    // }
-    //
-    // public event Action? Unloaded
-    // {
-    //     add => _unloadedEventManager.AddEventHandler(value);
-    //     remove => _unloadedEventManager.RemoveEventHandler(value);
-    // }
-    //
-    // public event Action? AttachedToVisualTree
-    // {
-    //     add => _attachedToVisualTreeEventManager.AddEventHandler(value);
-    //     remove => _attachedToVisualTreeEventManager.RemoveEventHandler(value);
-    // }
-    //
-    // public event Action? DetachedFromVisualTree
-    // {
-    //     add => _detachedFromVisualTreeEventManager.AddEventHandler(value);
-    //     remove => _detachedFromVisualTreeEventManager.RemoveEventHandler(value);
-    // }
-    //
-    // public virtual void OnLoaded(RoutedEventArgs routedEventArgs) =>
-    //     _loadedEventManager.RaiseEvent(nameof(Loaded));
-    //
-    // public virtual void OnUnloaded(RoutedEventArgs routedEventArgs) =>
-    //     _unloadedEventManager.RaiseEvent(nameof(Unloaded));
-    //
-    // public virtual void OnAttachedToVisualTree(
-    //     VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs
-    // ) => _attachedToVisualTreeEventManager.RaiseEvent(nameof(AttachedToVisualTree));
-    //
-    // public virtual void OnDetachedFromVisualTree(
-    //     VisualTreeAttachmentEventArgs visualTreeAttachmentEventArgs
-    // ) => _detachedFromVisualTreeEventManager.RaiseEvent(nameof(DetachedFromVisualTree));
+    private readonly WeakEventManager _loadedEventManager = new();
+    private readonly WeakEventManager _unloadedEventManager = new();
+    private readonly WeakEventManager _attachedToVisualTreeEventManager = new();
+    private readonly WeakEventManager _detachedFromVisualTree = new();
 
-    private readonly WeakEventManager<RoutedEventArgs> _loadedAndUnloadedEventManager = new();
-    private readonly WeakEventManager<VisualTreeAttachmentEventArgs> _attachedAndDetachedEventManager =
-        new();
-
-    public event Action<RoutedEventArgs>? Loaded
+    public event EventHandler Loaded
     {
-        add => _loadedAndUnloadedEventManager.AddEventHandler(value);
-        remove => _loadedAndUnloadedEventManager.RemoveEventHandler(value);
+        add => _loadedEventManager.AddEventHandler(value);
+        remove => _loadedEventManager.RemoveEventHandler(value);
     }
 
-    public event Action<RoutedEventArgs>? Unloaded
+    public event EventHandler Unloaded
     {
-        add => _loadedAndUnloadedEventManager.AddEventHandler(value);
-        remove => _loadedAndUnloadedEventManager.RemoveEventHandler(value);
+        add => _unloadedEventManager.AddEventHandler(value);
+        remove => _unloadedEventManager.RemoveEventHandler(value);
     }
 
-    public event Action<VisualTreeAttachmentEventArgs>? AttachedToVisualTree
+    public event EventHandler AttachedToVisualTree
     {
-        add => _attachedAndDetachedEventManager.AddEventHandler(value);
-        remove => _attachedAndDetachedEventManager.RemoveEventHandler(value);
+        add => _attachedToVisualTreeEventManager.AddEventHandler(value);
+        remove => _attachedToVisualTreeEventManager.RemoveEventHandler(value);
     }
 
-    public event Action<VisualTreeAttachmentEventArgs>? DetachedFromVisualTree
+    public event EventHandler DetachedFromVisualTree
     {
-        add => _attachedAndDetachedEventManager.AddEventHandler(value);
-        remove => _attachedAndDetachedEventManager.RemoveEventHandler(value);
+        add => _detachedFromVisualTree.AddEventHandler(value);
+        remove => _detachedFromVisualTree.RemoveEventHandler(value);
     }
 
-    public virtual void OnLoaded(RoutedEventArgs e) =>
-        _loadedAndUnloadedEventManager.RaiseEvent(e, nameof(Loaded));
+    public virtual void OnLoaded() =>
+        _loadedEventManager.RaiseEvent(this, EventArgs.Empty, nameof(Loaded));
 
-    public virtual void OnUnloaded(RoutedEventArgs e) =>
-        _loadedAndUnloadedEventManager.RaiseEvent(e, nameof(Unloaded));
+    public virtual void OnUnloaded() =>
+        _unloadedEventManager.RaiseEvent(this, EventArgs.Empty, nameof(Unloaded));
 
-    public virtual void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e) =>
-        _attachedAndDetachedEventManager.RaiseEvent(e, nameof(AttachedToVisualTree));
+    public virtual void OnAttachedToVisualTree() =>
+        _attachedToVisualTreeEventManager.RaiseEvent(
+            this,
+            EventArgs.Empty,
+            nameof(AttachedToVisualTree)
+        );
 
-    public virtual void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e) =>
-        _attachedAndDetachedEventManager.RaiseEvent(e, nameof(DetachedFromVisualTree));
+    public virtual void OnDetachedFromVisualTree() =>
+        _detachedFromVisualTree.RaiseEvent(this, EventArgs.Empty, nameof(DetachedFromVisualTree));
 
     public ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
     public ISukiToastManager ToastManager { get; } = new SukiToastManager();

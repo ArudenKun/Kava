@@ -13,7 +13,7 @@ public abstract partial class BasePageViewModel : BaseViewModel, IPageViewModel
 
     protected BasePageViewModel()
     {
-        AttachedToVisualTree += _ => IsPageActive = true;
-        DetachedFromVisualTree += _ => IsPageActive = false;
+        AttachedToVisualTree += (_, _) => IsPageActive = true;
+        DetachedFromVisualTree += (_, _) => IsPageActive = false;
     }
 }

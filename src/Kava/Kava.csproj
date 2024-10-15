@@ -28,9 +28,9 @@
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.2.0-rc1"/>
         <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.1.0.4"/>
-        <PackageReference Include="CefGlue.Avalonia" Version="120.6099.205" />
         <PackageReference Include="Cogwheel" Version="2.1.0" />
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2"/>
+        <PackageReference Include="DebounceThrottle" Version="3.0.1" />
         <PackageReference Include="DependencyPropertyGenerator" Version="1.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -45,6 +45,11 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1"/>
+        <PackageReference Condition="'$(IsWindows)'=='true'" Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+        <PackageReference Condition="'$(IsWindows)'=='true'" Include="Microsoft.Windows.CsWin32" Version="0.3.106">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
         <PackageReference Include="NotNot.AppSettings" Version="1.1.1" />
         <PackageReference Include="ObservableCollections" Version="3.1.1" />
         <PackageReference Include="ServiceScan.SourceGenerator" Version="1.2.5">
@@ -63,11 +68,7 @@
         <ProjectReference Include="..\Kava.Core\Kava.Core.csproj"/>
         <ProjectReference Include="..\Kava.Generators\Kava.Generators.csproj" OutputItemType="analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Services\Hosting\"/>
-    </ItemGroup>
-
+    
     <ItemGroup>
         <None Update="appsettings.Development.json" Condition="$(Configuration.Contains('Debug'))">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

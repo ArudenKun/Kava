@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Generator.Attributes;
+using Kava.Generators.Attributes;
 using Kava.ViewModels.Abstractions;
 
 namespace Kava;
@@ -39,12 +39,12 @@ public sealed partial class ViewLocator
 
         void Loaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.OnLoaded(e);
+            viewModel?.OnLoaded();
         }
 
         void Unloaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.OnUnloaded(e);
+            viewModel?.OnUnloaded();
 
             control.Loaded -= Loaded;
             control.Unloaded -= Unloaded;
@@ -52,12 +52,12 @@ public sealed partial class ViewLocator
 
         void AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            viewModel.OnAttachedToVisualTree(e);
+            viewModel.OnAttachedToVisualTree();
         }
 
         void DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
         {
-            viewModel.OnDetachedFromVisualTree(e);
+            viewModel.OnDetachedFromVisualTree();
 
             control.AttachedToVisualTree -= AttachedToVisualTree;
             control.DetachedFromVisualTree -= DetachedFromVisualTree;

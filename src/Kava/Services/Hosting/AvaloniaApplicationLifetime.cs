@@ -6,7 +6,7 @@ using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Kava.Hosting;
+namespace Kava.Services.Hosting;
 
 public sealed class AvaloniaApplicationLifetime<TApplication> : IHostLifetime
     where TApplication : Application
