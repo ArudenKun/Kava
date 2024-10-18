@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Kava.Generators.Attributes;
@@ -33,8 +32,6 @@ public sealed partial class ViewLocator
 
         control.Loaded += Loaded;
         control.Unloaded += Unloaded;
-        control.AttachedToVisualTree += AttachedToVisualTree;
-        control.DetachedFromVisualTree += DetachedFromVisualTree;
         return;
 
         void Loaded(object? sender, RoutedEventArgs e)
@@ -48,19 +45,6 @@ public sealed partial class ViewLocator
 
             control.Loaded -= Loaded;
             control.Unloaded -= Unloaded;
-        }
-
-        void AttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            viewModel.OnAttachedToVisualTree();
-        }
-
-        void DetachedFromVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
-        {
-            viewModel.OnDetachedFromVisualTree();
-
-            control.AttachedToVisualTree -= AttachedToVisualTree;
-            control.DetachedFromVisualTree -= DetachedFromVisualTree;
         }
     }
 }

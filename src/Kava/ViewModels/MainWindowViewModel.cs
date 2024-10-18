@@ -9,21 +9,37 @@ public partial class MainWindowViewModel : BaseViewModel
     private readonly ILogger<MainWindowViewModel> _logger;
 
     [ObservableProperty]
-    private string _pdfPath = @"C:\Users\alden\Downloads\Dada-Flight-Dec17-2024-MNL-CGO.pdf";
+    private string _pdfPath = "";
+
+    [ObservableProperty]
+    private bool _isIdle;
 
     public MainWindowViewModel(ILogger<MainWindowViewModel> logger)
     {
         _logger = logger;
 
-        Loaded += (_, _) =>
+        Loaded += () =>
         {
             _logger.LogInformation("Loaded MainWindowViewModel");
             PdfPath = @"C:\Users\alden\Downloads\Dada-Flight-Dec17-2024-MNL-CGO.pdf";
         };
 
-        AttachedToVisualTree += (_, _) =>
+        Unloaded += () =>
         {
-            logger.LogInformation("AttachedToVisualTree MainWindowViewModel");
+            _logger.LogInformation("UnLoaded MainWindowViewModel");
         };
     }
+
+    partial void OnIsIdleChanged(bool value)
+    {
+        if (!value)
+        {
+            return;
+        }
+
+        _logger.LogInformation("User is idle on: {Time}", DateTimeOffset.Now);
+        ShowIdleDialog();
+    }
+
+    private void ShowIdleDialog() { }
 }

@@ -9,3 +9,4 @@ GetWindowLong
 SetLayeredWindowAttributes
 AllocConsole
 FreeConsole
+MessageBox

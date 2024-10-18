@@ -7,7 +7,7 @@ using SukiUI.Enums;
 namespace Kava.Services;
 
 [INotifyPropertyChanged]
-public sealed partial class SettingsService : SettingsBase, ISingletonService
+public sealed partial class SettingsService : SettingsBase, ISingleton
 {
     private bool _isAutoUpdateEnabled;
     private SukiColor _color = SukiColor.Blue;

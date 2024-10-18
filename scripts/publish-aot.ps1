@@ -1,6 +1,7 @@
+$currentDir = Get-Location
 Set-Location -Path (Join-Path $PSScriptRoot "..")
 
-$publishFolderPath = ".\publish" 
+$publishFolderPath = ".\publish"
 
 if (Test-Path $publishFolderPath)
 {
@@ -9,3 +10,4 @@ if (Test-Path $publishFolderPath)
 }
 
 dotnet publish "src\Kava" -o publish
+Set-Location -Path $currentDir

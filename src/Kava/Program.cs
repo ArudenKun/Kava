@@ -1,25 +1,25 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Runtime.Versioning;
+﻿using System.Runtime.Versioning;
 using Avalonia;
 using CommunityToolkit.Mvvm.Messaging;
 using Humanizer;
 using JetBrains.Annotations;
-using Kava.AppSettingsGen;
-using Kava.Data;
-using Kava.Data.Compiled;
 using Kava.Services.Abstractions;
+using Kava.Services.Abstractions.Factories;
+using Kava.Services.Factories;
 using Kava.Services.Hosting;
+using Kava.Services.Startup;
 using Kava.Utilities.Helpers;
 using Kava.ViewModels.Abstractions;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 using ServiceScan.SourceGenerator;
-using Utf8StringInterpolation;
-using ZLogger;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Kava;
 
@@ -32,9 +32,6 @@ internal static partial class Program
     [SupportedOSPlatform("windows")]
     [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("macos")]
-    [RequiresUnreferencedCode(
-        "Calls Microsoft.Extensions.DependencyInjection.EntityFrameworkServiceCollectionExtensions.AddDbContextFactory<TContext>(Action<DbContextOptionsBuilder>, ServiceLifetime)"
-    )]
     public static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder();
@@ -43,60 +40,77 @@ internal static partial class Program
             ? Environments.Development
             : Environments.Production;
 
-        builder
-            .Configuration.AddJsonFile("appsettings.json", false, true)
-            .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", true, true)
-            .AddEnvironmentVariables();
+        builder.Services.Configure<HostOptions>(options =>
+            options.ServicesStartConcurrently = true
+        );
 
-        builder
-            .Logging.ClearProviders()
-            .AddZLoggerConsole(options =>
-            {
-                options.OutputEncodingToUtf8 = false;
-                options.UsePlainTextFormatter(formatter =>
-                {
-                    formatter.SetPrefixFormatter(
-                        $"[{0} {1} {2}] ",
-                        (in MessageTemplate template, in LogInfo info) =>
-                            template.Format(info.Timestamp, info.LogLevel, info.Category)
-                    );
-                    formatter.SetExceptionFormatter(
-                        (writer, ex) => Utf8String.Format(writer, $"{ex.Message}")
-                    );
-                });
-            })
-            .AddZLoggerFile(EnvironmentHelper.AppDataDirectory.JoinPath("logs", "logs.log"))
-            .AddZLoggerRollingFile(
-                (dt, index) =>
-                    EnvironmentHelper.AppDataDirectory.JoinPath(
-                        "logs",
-                        $"logs-{dt.ToLocalTime():dd-MM-yyyy}-{index}.log"
-                    ),
-                (int)1.Gigabytes().Kilobytes
-            );
+        builder.Services.AddGeneratedServices();
+        builder.Services.AddAvaloniauiDesktopApplication<App>(appBuilder =>
+            appBuilder.UsePlatformDetect().LogToTrace()
+        );
 
-        builder
-            .Services.AddSingleton<IAppSettingsBinder, AppSettingsBinder>()
-            .AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        builder.Services.AddHostedService<DbMigrationService>();
 
-        builder
-            .Services.AddGeneratedServices()
-            .AddDbContextFactory<AppDbContext>(
-                (sp, optionsBuilder) =>
-                    optionsBuilder
-                        .AddInterceptors(sp.GetServices<IInterceptor>())
-                        .UseSqlite(
-                            $"Data Source={EnvironmentHelper.AppDataDirectory.JoinPath("data.db")}"
-                        )
-                        .UseModel(AppDbContextModel.Instance)
+        builder.Services.AddSingleton<IDbConnectionFactory>(
+            new SqliteConnectionFactory(
+                $"Data Source={EnvironmentHelper.AppDataDirectory.JoinPath("kava.db")}"
             )
-            .AddAvaloniauiDesktopApplication<App>(appBuilder =>
-                appBuilder.UsePlatformDetect().LogToTrace()
-            );
+        );
+        builder.Services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        builder.Services.AddSingleton(
+            new LoggingLevelSwitch(
+                builder.Environment.IsDevelopment()
+                    ? LogEventLevel.Debug
+                    : LogEventLevel.Information
+            )
+        );
+
+        builder.Services.AddSerilog(
+            (sp, configuration) =>
+            {
+                const string template =
+                    "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}";
+                var logPath = EnvironmentHelper.AppDataDirectory.JoinPath("logs", "logs.log");
+                configuration
+                    .MinimumLevel.ControlledBy(sp.GetRequiredService<LoggingLevelSwitch>())
+                    .Enrich.FromLogContext()
+                    .WriteTo.Console(outputTemplate: template)
+                    .WriteTo.Async(x =>
+                        x.PersistentFile(
+                            logPath,
+                            outputTemplate: template,
+                            rollOnFileSizeLimit: true,
+                            persistentFileRollingInterval: PersistentFileRollingInterval.Day,
+                            preserveLogFilename: true,
+                            fileSizeLimitBytes: (long?)1.Gigabytes().Bytes
+                        )
+                    );
+            }
+        );
 
         using var host = builder.Build();
 
-        host.RunAvaloniaApplicationAsync(args);
+        try
+        {
+            host.RunAvaloniaApplicationAsync(args);
+        }
+        catch (Exception e)
+        {
+            host.Services.GetRequiredService<ILogger<App>>().LogCritical(e, "An error occured");
+            if (OperatingSystem.IsWindows())
+            {
+#pragma warning disable CA1416
+                PInvoke.MessageBox(
+                    (HWND)0,
+                    e.ToString(),
+                    "Kava Fatal Error",
+                    MESSAGEBOX_STYLE.MB_ICONSTOP
+                );
+#pragma warning restore CA1416
+            }
+
+            throw;
+        }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
@@ -111,20 +125,12 @@ internal static partial class Program
         AsImplementedInterfaces = true
     )]
     [GenerateServiceRegistrations(
-        AssignableTo = typeof(IInterceptor),
+        AssignableTo = typeof(ISingleton),
         Lifetime = ServiceLifetime.Singleton,
         AsSelf = true,
         AsImplementedInterfaces = true
     )]
-    [GenerateServiceRegistrations(
-        AssignableTo = typeof(ISingletonService),
-        Lifetime = ServiceLifetime.Singleton,
-        AsSelf = true,
-        AsImplementedInterfaces = true
-    )]
-    private static partial IServiceCollection AddGeneratedServices(
-        this IServiceCollection serviceProvider
-    );
+    private static partial void AddGeneratedServices(this IServiceCollection serviceProvider);
 
     private static bool IsDebug
 #if DEBUG

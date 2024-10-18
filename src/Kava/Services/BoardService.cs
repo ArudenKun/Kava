@@ -1,51 +1,82 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Threading.Tasks;
-using Kava.Core.Models;
-using Kava.Data;
+using Dapper;
+using Dapper.SimpleSqlBuilder;
+using Kava.Models;
 using Kava.Services.Abstractions;
+using Kava.Services.Abstractions.Factories;
 using Kava.Utilities.Helpers;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Kava.Services;
 
-[RequiresUnreferencedCode("Calls DbContext Ctor")]
-public class BoardService : ISingletonService
+public class BoardService : ISingleton
 {
     private static readonly string FileDbPath = EnvironmentHelper.AppDataDirectory.JoinPath(
-        "files.db"
+        "kava_files.db"
     );
 
-    private readonly IDbContextFactory<AppDbContext> _dbContextFactory;
+    private readonly ILogger<BoardService> _logger;
+    private readonly IDbConnectionFactory _connectionFactory;
 
-    public BoardService(
-        IServiceScopeFactory serviceScopeFactory,
-        IDbContextFactory<AppDbContext> dbContextFactory
-    )
+    public BoardService(ILogger<BoardService> logger, IDbConnectionFactory connectionFactory)
     {
-        _dbContextFactory = dbContextFactory;
+        _logger = logger;
+        _connectionFactory = connectionFactory;
     }
 
     public async Task AddBoardAsync(Board board)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var sqlBuilder = SimpleBuilder
+            .CreateFluent()
+            .InsertInto($"Board")
+            .Columns($"Name")
+            .Values($"{board.Name}");
 
-        await db.AddAsync(board);
-        await db.SaveChangesAsync();
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Inserting Board: {Sql}", sqlBuilder.Sql);
+        await db.ExecuteAsync(sqlBuilder.Sql, sqlBuilder.Parameters);
     }
 
-    public async Task<Board?> GetBoardAsync(Ulid? boardId)
+    public async Task<Board?> GetBoardAsync(int boardId, bool includeAllJoins = false)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
-        return await db.FindAsync<Board>(boardId);
+        using var db = await _connectionFactory.CreateAsync();
+
+        var sqlBuilder = SimpleBuilder.CreateFluent().Select($"*").From($"Board b");
+
+        if (includeAllJoins)
+        {
+            sqlBuilder
+                .LeftJoin($"Category cat ON b.Id = cat.BoardId")
+                .LeftJoin($"Card c ON cat.Id = c.CategoryId")
+                .LeftJoin($"Attachment a ON c.Id = a.CardId");
+        }
+
+        sqlBuilder.Where($"b.Id = {boardId}");
+
+        _logger.LogDebug("Querying Board: {Sql}", sqlBuilder.Sql);
+        var result = await db.QuerySingleOrDefaultAsync<Board>(
+            sqlBuilder.Sql,
+            sqlBuilder.Parameters
+        );
+
+        return result;
     }
 
-    public async Task<IReadOnlyList<Attachment>> GetBoardsAsync()
+    public async Task<IEnumerable<Board>> GetBoardsAsync(bool includeCategories = false)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
-        return await db.Attachments.AsQueryable().ToListAsync();
+        var sqlBuilder = SimpleBuilder.CreateFluent().Select($"*").From($"Board b");
+
+        if (includeCategories)
+        {
+            sqlBuilder.InnerJoin($"Category c ON b.Id = c.BoardId");
+        }
+
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Querying Boards: {Sql}", sqlBuilder.Sql);
+        var results = await db.QueryAsync<Board>(sqlBuilder.Sql, sqlBuilder.Parameters);
+
+        return results;
     }
 
     public async Task<Attachment> UploadAttachmentAsync(
@@ -64,24 +95,39 @@ public class BoardService : ISingletonService
         Stream attachmentStream
     )
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
         var entryInfo = FileDb.Store(FileDbPath, attachmentName, attachmentStream);
-        var attachment = new Attachment
+
+        var attachment = new Attachment(
+            entryInfo.FileName,
+            entryInfo.FileLength,
+            entryInfo.MimeType
+        )
         {
             Id = new Ulid(entryInfo.ID),
             CardId = card.Id,
-            Name = entryInfo.FileName,
-            Size = entryInfo.FileLength,
-            MimeType = entryInfo.MimeType,
         };
 
-        await db.Attachments.AddAsync(attachment);
-        await db.SaveChangesAsync();
+        var sqlBuilder = SimpleBuilder
+            .CreateFluent()
+            .InsertInto($"Attachment")
+            .Columns($"Id")
+            .Columns($"CardId")
+            .Columns($"Name")
+            .Columns($"Size")
+            .Columns($"MimeType")
+            .Values($"{attachment.Id}")
+            .Values($"{attachment.CardId}")
+            .Values($"{attachment.Name}")
+            .Values($"{attachment.Size}")
+            .Values($"{attachment.MimeType}");
 
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Inserting Attachment: {Sql}", sqlBuilder.Sql);
+        await db.ExecuteAsync(sqlBuilder.Sql, sqlBuilder.Parameters);
         return attachment;
     }
 
-    public ValueTask DownloadAttachmentAsync(
+    public static ValueTask DownloadAttachmentAsync(
         Attachment attachment,
         string? destinationDirectory = null
     )
@@ -92,29 +138,48 @@ public class BoardService : ISingletonService
         return ValueTask.CompletedTask;
     }
 
-    public async Task<IReadOnlyList<Attachment>> GetAttachmentsAsync(Card card)
+    public async Task<IEnumerable<Attachment>> GetAttachmentsAsync(Card card)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
-        return await db.Attachments.AsQueryable().Where(x => x.CardId == card.Id).ToListAsync();
+        var sqlBuilder = SimpleBuilder
+            .CreateFluent()
+            .Select($"*")
+            .From($"Attachment")
+            .Where($"CardId = {card.Id}");
+
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Querying Attachments: {Sql}", sqlBuilder.Sql);
+        var results = await db.QueryAsync<Attachment>(sqlBuilder.Sql, sqlBuilder.Parameters);
+        return results;
     }
 
     public async Task UpdateAttachmentAsync(Attachment attachment)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
+        var sqlBuilder = SimpleBuilder
+            .CreateFluent()
+            .Update($"Attachment")
+            .Set($"Name = {attachment.Name}")
+            .Set($"Size = {attachment.Size}")
+            .Set($"MimeType = {attachment.MimeType}")
+            .Where($"Id = {attachment.Id}");
 
-        db.Update(attachment);
-        await db.SaveChangesAsync();
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Updating Attachment: {Sql}", sqlBuilder.Sql);
+        await db.ExecuteAsync(sqlBuilder.Sql, sqlBuilder.Parameters);
     }
 
     public async Task<bool> DeleteAttachmentAsync(Attachment attachment)
     {
-        await using var db = await _dbContextFactory.CreateDbContextAsync();
-
         var deleted = FileDb.Delete(FileDbPath, attachment.Id.ToGuid());
         FileDb.Shrink(FileDbPath);
 
-        db.Attachments.Remove(attachment);
-        await db.SaveChangesAsync();
+        var sqlBuilder = SimpleBuilder
+            .CreateFluent()
+            .DeleteFrom($"Attachment")
+            .Where($"Id = {attachment.Id}");
+
+        using var db = await _connectionFactory.CreateAsync();
+        _logger.LogDebug("Deleting Attachment: {Sql}", sqlBuilder.Sql);
+        await db.ExecuteAsync(sqlBuilder.Sql, sqlBuilder.Parameters);
 
         return deleted;
     }

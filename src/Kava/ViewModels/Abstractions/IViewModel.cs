@@ -8,12 +8,8 @@ public interface IViewModel
         INotifyPropertyChanging,
         INotifyDataErrorInfo
 {
-    event EventHandler Loaded;
-    event EventHandler Unloaded;
-    event EventHandler AttachedToVisualTree;
-    event EventHandler DetachedFromVisualTree;
+    event Action Loaded;
+    event Action Unloaded;
     void OnLoaded();
     void OnUnloaded();
-    void OnAttachedToVisualTree();
-    void OnDetachedFromVisualTree();
 }

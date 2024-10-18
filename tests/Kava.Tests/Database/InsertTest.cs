@@ -1,52 +1,90 @@
-﻿using System.Globalization;
-using Kava.Core.Models;
+﻿using DbUp;
+using DbUp.Engine.Output;
+using Kava.Data.DbUp;
+using Kava.Models;
+using Kava.Services;
+using Kava.Services.Factories;
+using Kava.Services.Startup;
 using Kava.Utilities.Helpers;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit.Abstractions;
 
 namespace Kava.Tests.Database;
 
-public class InsertTest
+public sealed class InsertTest : IDisposable
 {
+    private static readonly string TestDbPath = EnvironmentHelper.AppDirectory.JoinPath("test.db");
+
+    private readonly SqliteConnectionFactory _connectionFactory = new($"Data Source={TestDbPath}");
+
     private readonly ITestOutputHelper _outputHelper;
+
+    private readonly BoardService _boardService;
 
     public InsertTest(ITestOutputHelper outputHelper)
     {
         _outputHelper = outputHelper;
+        _boardService = new BoardService(NullLogger<BoardService>.Instance, _connectionFactory);
     }
 
     [Fact]
-    public async Task InsertFullHierarchy()
+    public async Task BoardServiceTest()
     {
-        var mocker = new AutoMocker();
-        using var factory = mocker.WithDbScope();
-        await using var dbContext = await factory.CreateDbContextAsync();
-        var salt = Random.Shared.Next().GetMD5Hash();
-        var board = new Board { Name = $"Test Board-{salt}" };
+        var upgrader = DeployChanges
+            .To.SQLiteDatabase(_connectionFactory.ConnectionString)
+            .WithScriptsEmbeddedInAssembly(typeof(DbMigrationService).Assembly)
+            .WithTransactionPerScript()
+            .LogTo(new TestLogger(_outputHelper))
+            .Build();
 
-        dbContext.Boards.Add(board);
-        await dbContext.SaveChangesAsync();
-        await Task.Delay(TimeSpan.FromSeconds(2));
-        board.Name = $"Test Board2-{salt}";
-        dbContext.Update(board);
-        await dbContext.SaveChangesAsync();
-        _outputHelper.WriteLine(board.CreatedAt.ToString(CultureInfo.InvariantCulture));
-        _outputHelper.WriteLine(board.UpdatedAt.ToString(CultureInfo.InvariantCulture));
+        upgrader.PerformUpgrade();
+
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        using var connection = await _connectionFactory.CreateAsync();
+
+        var board = new Board("Test Board");
+        await _boardService.AddBoardAsync(board);
     }
 
-    // [Fact]
-    // public async Task FileDbInsertionTest()
-    // {
-    //     const string fileDbPath = @"C:\Users\alden\AppData\Roaming\Kava\file_store.db";
-    //     var fileName = $"test-{DateTime.Now:yyyyMMddHHmmssfff}";
-    //     var fileInfo = await Task.Run(async () =>
-    //     {
-    //         await using var fileStream = await FileSystemHelper.OpenReadAsync(
-    //             @"C:\Users\alden\Downloads\test.txt"
-    //         );
-    //         return DB.Store(fileDbPath, fileName, fileStream);
-    //     });
-    //
-    //     _outputHelper.WriteLine($"{fileInfo.FileLength.Bytes()}");
-    //     Assert.Equal(fileInfo.FileName, fileName);
-    // }
+    private class TestLogger(ITestOutputHelper outputHelper) : IUpgradeLog
+    {
+        public void LogTrace(string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+
+        public void LogDebug(string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+
+        public void LogInformation(string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+
+        public void LogWarning(string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+
+        public void LogError(string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+
+        public void LogError(Exception ex, string format, params object[] args)
+        {
+            outputHelper.WriteLine(format, args);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (File.Exists(TestDbPath))
+        {
+            File.Delete(TestDbPath);
+        }
+    }
 }

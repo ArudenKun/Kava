@@ -12,50 +12,23 @@ namespace Kava.ViewModels.Abstractions;
 [ObservableRecipient]
 public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 {
-    private readonly WeakEventManager _loadedEventManager = new();
-    private readonly WeakEventManager _unloadedEventManager = new();
-    private readonly WeakEventManager _attachedToVisualTreeEventManager = new();
-    private readonly WeakEventManager _detachedFromVisualTree = new();
+    private readonly WeakEventManager _weakEventManager = new();
 
-    public event EventHandler Loaded
+    public event Action Loaded
     {
-        add => _loadedEventManager.AddEventHandler(value);
-        remove => _loadedEventManager.RemoveEventHandler(value);
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
     }
 
-    public event EventHandler Unloaded
+    public event Action Unloaded
     {
-        add => _unloadedEventManager.AddEventHandler(value);
-        remove => _unloadedEventManager.RemoveEventHandler(value);
+        add => _weakEventManager.AddEventHandler(value);
+        remove => _weakEventManager.RemoveEventHandler(value);
     }
 
-    public event EventHandler AttachedToVisualTree
-    {
-        add => _attachedToVisualTreeEventManager.AddEventHandler(value);
-        remove => _attachedToVisualTreeEventManager.RemoveEventHandler(value);
-    }
+    public virtual void OnLoaded() => _weakEventManager.RaiseEvent(nameof(Loaded));
 
-    public event EventHandler DetachedFromVisualTree
-    {
-        add => _detachedFromVisualTree.AddEventHandler(value);
-        remove => _detachedFromVisualTree.RemoveEventHandler(value);
-    }
-
-    public virtual void OnLoaded() =>
-        _loadedEventManager.RaiseEvent(this, EventArgs.Empty, nameof(Loaded));
-
-    public virtual void OnUnloaded() =>
-        _unloadedEventManager.RaiseEvent(this, EventArgs.Empty, nameof(Unloaded));
-
-    public virtual void OnAttachedToVisualTree() =>
-        _attachedToVisualTreeEventManager.RaiseEvent(
-            this,
-            EventArgs.Empty,
-            nameof(AttachedToVisualTree)
-        );
-
-    public virtual void OnDetachedFromVisualTree() =>
-        _detachedFromVisualTree.RaiseEvent(this, EventArgs.Empty, nameof(DetachedFromVisualTree));
+    public virtual void OnUnloaded() => _weakEventManager.RaiseEvent(nameof(Unloaded));
 
     public ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
     public ISukiToastManager ToastManager { get; } = new SukiToastManager();
@@ -99,9 +72,9 @@ public abstract partial class BaseViewModel : ObservableValidator, IViewModel
         return await Dispatcher.UIThread.InvokeAsync(action);
     }
 
-    ~BaseViewModel() => Dispose(false);
-
     protected void OnAllPropertiesChanged() => OnPropertyChanged(string.Empty);
+
+    ~BaseViewModel() => Dispose(false);
 
     /// <summary>
     /// Be sure to call base.Dispose() and is outside the if condition
