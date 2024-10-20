@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AsyncAwaitBestPractices;
 using Avalonia.Threading;
@@ -30,8 +31,8 @@ public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 
     public virtual void OnUnloaded() => _weakEventManager.RaiseEvent(nameof(Unloaded));
 
-    public ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
-    public ISukiToastManager ToastManager { get; } = new SukiToastManager();
+    public static ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
+    public static ISukiToastManager ToastManager { get; } = new SukiToastManager();
 
     protected DisposableCollector Subscriptions { get; } = new();
 

@@ -1,45 +1,43 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+﻿using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.Input;
+using Kava.Services;
+using Kava.Services.Abstractions;
+using Kava.Utilities.Extensions.Avalonia;
 using Kava.ViewModels.Abstractions;
 using Microsoft.Extensions.Logging;
 
 namespace Kava.ViewModels;
 
-public partial class MainWindowViewModel : BaseViewModel
+public partial class MainWindowViewModel : BaseViewModel, ISingleton
 {
     private readonly ILogger<MainWindowViewModel> _logger;
+    private readonly DataService _dataService;
+    private readonly StorageService _storageService;
 
-    [ObservableProperty]
-    private string _pdfPath = "";
-
-    [ObservableProperty]
-    private bool _isIdle;
-
-    public MainWindowViewModel(ILogger<MainWindowViewModel> logger)
+    public MainWindowViewModel(
+        ILogger<MainWindowViewModel> logger,
+        DataService dataService,
+        StorageService storageService
+    )
     {
         _logger = logger;
-
-        Loaded += () =>
-        {
-            _logger.LogInformation("Loaded MainWindowViewModel");
-            PdfPath = @"C:\Users\alden\Downloads\Dada-Flight-Dec17-2024-MNL-CGO.pdf";
-        };
-
-        Unloaded += () =>
-        {
-            _logger.LogInformation("UnLoaded MainWindowViewModel");
-        };
+        _dataService = dataService;
+        _storageService = storageService;
     }
 
-    partial void OnIsIdleChanged(bool value)
+    [RelayCommand]
+    private async Task OpenPdf()
     {
-        if (!value)
+        var storageFiles = await _storageService.OpenFileAsync(options =>
         {
-            return;
+            options.AllowMultiple = false;
+        });
+
+        foreach (var storageFile in storageFiles)
+        {
+            _logger.LogInformation($"Opening file: {storageFile.Name}");
         }
 
-        _logger.LogInformation("User is idle on: {Time}", DateTimeOffset.Now);
-        ShowIdleDialog();
+        await storageFiles[0].LaunchFileAsync();
     }
-
-    private void ShowIdleDialog() { }
 }

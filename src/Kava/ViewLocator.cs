@@ -1,3 +1,4 @@
+using System;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Kava.Generators.Attributes;
@@ -19,7 +20,6 @@ public sealed partial class ViewLocator
             return new TextBlock { Text = $"No view registered for {viewModelType.FullName}" };
 
         var control = factory(viewModel);
-        control.DataContext = viewModel;
         RegisterEvents((IViewModel)viewModel, control);
         return control;
     }

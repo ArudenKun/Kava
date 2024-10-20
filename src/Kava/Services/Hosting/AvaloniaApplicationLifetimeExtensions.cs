@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ public static class AvaloniaApplicationLifetimeExtensions
     /// <typeparam name="TApplication">The type of avaloniaui application <see cref="Application"/> to manage.</typeparam>
     /// <param name="services"><see cref="IServiceCollection"/></param>
     /// <param name="appBuilderConfiguration"><see cref="AppBuilder.Configure{TApplication}()"/></param>
-    public static IServiceCollection AddAvaloniauiDesktopApplication<
+    public static IServiceCollection AddAvaloniaDesktopApplication<
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApplication
     >(this IServiceCollection services, Func<AppBuilder, AppBuilder> appBuilderConfiguration)
         where TApplication : Application =>

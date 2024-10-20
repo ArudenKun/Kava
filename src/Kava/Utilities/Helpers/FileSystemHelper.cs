@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -57,7 +59,7 @@ public static class FileSystemHelper
     public static string? GetFromEnvironment(string cmd)
     {
         string? result = null;
-        var whichCommand = OperatingSystemHelper.IsWindows ? "where" : "which";
+        var whichCommand = OperatingSystem.IsWindows() ? "where" : "which";
 
         using Process process = new();
         process.StartInfo = new ProcessStartInfo

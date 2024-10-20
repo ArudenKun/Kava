@@ -1,16 +1,18 @@
-﻿using Kava.Models.Abstractions;
+﻿using System;
+using Kava.Data.Abstractions;
 
 namespace Kava.Models;
 
 public class Comment : BaseEntity
 {
-    public Comment(string content)
+    public Comment() { }
+
+    public Comment(string value)
     {
-        Content = content;
+        Value = value;
     }
 
-    public string Content { get; set; }
+    public string Value { get; set; } = string.Empty;
 
     public Ulid CardId { get; set; }
-    public Card Card { get; set; } = null!;
 }

@@ -1,23 +1,18 @@
-﻿using JetBrains.Annotations;
-using Kava.Models.Abstractions;
+﻿using System;
+using Kava.Data.Abstractions;
 
 namespace Kava.Models;
 
 public class Card : BaseEntity
 {
+    public Card() { }
+
     public Card(string name)
     {
         Name = name;
     }
 
-    public string Name { get; set; }
-
-    [PublicAPI]
-    public ICollection<Attachment> Attachments { get; } = [];
-
-    [PublicAPI]
-    public ICollection<Comment> Comments { get; } = [];
+    public string Name { get; set; } = string.Empty;
 
     public Ulid CategoryId { get; set; }
-    public Category Category { get; set; } = null!;
 }

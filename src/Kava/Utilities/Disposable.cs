@@ -1,4 +1,6 @@
-﻿namespace Kava.Utilities;
+﻿using System;
+
+namespace Kava.Utilities;
 
 public sealed class Disposable(Action dispose) : IDisposable
 {

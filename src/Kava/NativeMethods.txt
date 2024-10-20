@@ -1,12 +1,5 @@
-﻿GetModuleHandle
-RegisterClassEx
-CreateWindowEx
-PostQuitMessage
-WM_DESTROY
-DefWindowProc
-DestroyWindow
-GetWindowLong
-SetLayeredWindowAttributes
-AllocConsole
+﻿AllocConsole
 FreeConsole
+GetConsoleWindow
+ShowWindow
 MessageBox

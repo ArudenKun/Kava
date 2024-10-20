@@ -1,11 +1,10 @@
+using System;
 using System.Diagnostics.CodeAnalysis;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
-using Kava.Controls.WebView;
-using Kava.Utilities.Helpers;
 using Kava.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -26,9 +25,6 @@ public class App : Application
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
-#pragma warning disable CA1416 // Windows Support Only For Now
-        NativeWebView.SetFactory(() => new WebView2Adapter(EnvironmentHelper.AppDataDirectory));
-#pragma warning restore CA1416
         _logger.LogInformation("App Initialized");
     }
 
@@ -45,6 +41,7 @@ public class App : Application
             desktop.MainWindow =
                 DataTemplates[0].Build(_serviceProvider.GetRequiredService<MainWindowViewModel>())
                 as Window;
+            _logger.LogInformation("MainWindow Initialized");
         }
 
         base.OnFrameworkInitializationCompleted();

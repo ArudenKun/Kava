@@ -1,4 +1,5 @@
-﻿using Kava.Models.Abstractions;
+﻿using System;
+using Kava.Data.Abstractions;
 
 namespace Kava.Models;
 
@@ -15,5 +16,4 @@ public class Attachment : BaseEntity
     public ulong Size { get; set; }
     public string MimeType { get; set; }
     public Ulid CardId { get; set; }
-    public Card Card { get; set; } = null!;
 }

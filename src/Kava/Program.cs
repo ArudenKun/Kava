@@ -1,15 +1,13 @@
-﻿using System.Runtime.Versioning;
+﻿using System;
+using System.Runtime.Versioning;
 using Avalonia;
 using CommunityToolkit.Mvvm.Messaging;
 using Humanizer;
 using JetBrains.Annotations;
+using Kava.Data;
 using Kava.Services.Abstractions;
-using Kava.Services.Abstractions.Factories;
-using Kava.Services.Factories;
 using Kava.Services.Hosting;
-using Kava.Services.Startup;
 using Kava.Utilities.Helpers;
-using Kava.ViewModels.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -17,9 +15,6 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using ServiceScan.SourceGenerator;
-using Windows.Win32;
-using Windows.Win32.Foundation;
-using Windows.Win32.UI.WindowsAndMessaging;
 
 namespace Kava;
 
@@ -30,8 +25,8 @@ internal static partial class Program
     // yet and stuff might break.
     [STAThread]
     [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("linux")]
     [SupportedOSPlatform("macos")]
+    [SupportedOSPlatform("linux")]
     public static void Main(string[] args)
     {
         var builder = Host.CreateApplicationBuilder();
@@ -45,17 +40,13 @@ internal static partial class Program
         );
 
         builder.Services.AddGeneratedServices();
-        builder.Services.AddAvaloniauiDesktopApplication<App>(appBuilder =>
+        builder.Services.AddAvaloniaDesktopApplication<App>(appBuilder =>
             appBuilder.UsePlatformDetect().LogToTrace()
         );
+        builder.Services.AddJsonDataStorage(EnvironmentHelper.AppDataDirectory.JoinPath("data"));
 
-        builder.Services.AddHostedService<DbMigrationService>();
-
-        builder.Services.AddSingleton<IDbConnectionFactory>(
-            new SqliteConnectionFactory(
-                $"Data Source={EnvironmentHelper.AppDataDirectory.JoinPath("kava.db")}"
-            )
-        );
+        builder.Services.AddSingleton(AppJsonContext.Default);
+        builder.Services.AddSingleton(AppJsonContext.Default.Options);
         builder.Services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
         builder.Services.AddSingleton(
             new LoggingLevelSwitch(
@@ -97,16 +88,10 @@ internal static partial class Program
         catch (Exception e)
         {
             host.Services.GetRequiredService<ILogger<App>>().LogCritical(e, "An error occured");
+
             if (OperatingSystem.IsWindows())
             {
-#pragma warning disable CA1416
-                PInvoke.MessageBox(
-                    (HWND)0,
-                    e.ToString(),
-                    "Kava Fatal Error",
-                    MESSAGEBOX_STYLE.MB_ICONSTOP
-                );
-#pragma warning restore CA1416
+                _ = OSNativeHelper.Windows.ErrorMessageBox("Kava Fatal Error", e.ToString());
             }
 
             throw;
@@ -119,14 +104,20 @@ internal static partial class Program
         AppBuilder.Configure(() => new Application()).UsePlatformDetect().LogToTrace();
 
     [GenerateServiceRegistrations(
-        AssignableTo = typeof(IViewModel),
-        Lifetime = ServiceLifetime.Transient,
+        AssignableTo = typeof(ISingleton),
+        Lifetime = ServiceLifetime.Singleton,
         AsSelf = true,
         AsImplementedInterfaces = true
     )]
     [GenerateServiceRegistrations(
-        AssignableTo = typeof(ISingleton),
-        Lifetime = ServiceLifetime.Singleton,
+        AssignableTo = typeof(IScoped),
+        Lifetime = ServiceLifetime.Scoped,
+        AsSelf = true,
+        AsImplementedInterfaces = true
+    )]
+    [GenerateServiceRegistrations(
+        AssignableTo = typeof(ITransient),
+        Lifetime = ServiceLifetime.Transient,
         AsSelf = true,
         AsImplementedInterfaces = true
     )]

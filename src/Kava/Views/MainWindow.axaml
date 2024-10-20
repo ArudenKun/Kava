@@ -10,7 +10,7 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:suki="using:SukiUI.Controls"
+    xmlns:suki="https://github.com/kikipoulet/SukiUI"
     xmlns:vm="using:Kava.ViewModels"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -19,14 +19,10 @@
         <suki:SukiToastHost Manager="{Binding ToastManager}" />
     </suki:SukiWindow.Hosts>
 
-    <Grid RowDefinitions="Auto, *">
-        <TextBox
-            HorizontalAlignment="Center"
-            Text="Test"
-            VerticalAlignment="Center"
-            Watermark="youtube.com" />
-
-        <PdfViewer Grid.Row="1" PdfFile="{Binding PdfPath}" />
-    </Grid>
+    <StackPanel>
+        <Button Command="{Binding OpenPdfCommand}" Content="Open Pdf" />
+        <!-- <Button Command="{Binding GetAllBoardsCommand}" Content="Get All Boards" /> -->
+        <!-- <Button Command="{Binding DeleteCategoriesCommand}" Content="Delete Categories" /> -->
+    </StackPanel>
 
 </suki:SukiWindow>
