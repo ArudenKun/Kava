@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Core;
+using Serilog.Events;
 
 namespace Kava;
 
@@ -14,7 +15,18 @@ internal static class Program
     {
         var builder = Host.CreateApplicationBuilder(args);
 
+#if DEBUG
+        builder.Environment.EnvironmentName = Environments.Development;
+#endif
+
         builder.Services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        builder.Services.AddSingleton(
+            new LoggingLevelSwitch(
+                builder.Environment.IsDevelopment()
+                    ? LogEventLevel.Debug
+                    : LogEventLevel.Information
+            )
+        );
 
         builder.Services.AddWpfApplication<App>();
         builder.Services.AddSerilog(
