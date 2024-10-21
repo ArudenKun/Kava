@@ -10,7 +10,7 @@ namespace Kava.Hosting.Services.Internal;
 /// <summary>
 /// This maintains the mutex lifetime
 /// </summary>
-internal class MutexLifetimeService : IHostedService
+internal sealed class MutexLifetimeService : IHostedService
 {
     private readonly ILogger _logger;
     private readonly IHostEnvironment _hostEnvironment;

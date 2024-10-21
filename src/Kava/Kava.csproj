@@ -4,8 +4,9 @@
         <OutputType>WinExe</OutputType>
         <TargetFramework>net8.0-windows</TargetFramework>
         <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <ImplicitUsings>disable</ImplicitUsings>
         <UseWPF>true</UseWPF>
+        <EnableDefaultApplicationDefinition>false</EnableDefaultApplicationDefinition>
     </PropertyGroup>
 
     <ItemGroup>
@@ -38,6 +39,19 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Kava.Hosting\Kava.Hosting.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Services\" />
+      <Folder Include="ViewModels\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Page Update="Views\MainWindow.xaml">
+        <Generator>MSBuild:Compile</Generator>
+        <XamlRuntime>Wpf</XamlRuntime>
+        <SubType>Designer</SubType>
+      </Page>
     </ItemGroup>
 
 </Project>

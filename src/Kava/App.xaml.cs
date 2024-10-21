@@ -1,7 +1,5 @@
-﻿using System.Diagnostics;
-using System.Windows;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using System.Windows;
+using Microsoft.Extensions.Logging;
 using R3;
 
 namespace Kava;
@@ -11,31 +9,19 @@ namespace Kava;
 /// </summary>
 public partial class App
 {
+    private readonly ILogger<App> _logger;
+
+    public App(ILogger<App> logger)
+    {
+        _logger = logger;
+    }
+
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
 
         WpfProviderInitializer.SetDefaultObservableSystem(ex =>
-            Trace.WriteLine($"R3 UnhandledException:{ex}")
-        );
-    }
-
-    private static void Main2()
-    {
-        var builder = new HostApplicationBuilder([]);
-
-        builder.Services.Scan(s =>
-            s.FromAssemblyOf<App>()
-                .AddClasses(c => c.AssignableTo<FrameworkElement>())
-                .AsSelfWithInterfaces(type =>
-                {
-                    if (type == typeof(IHostedService))
-                    {
-                        return true;
-                    }
-
-                    return false;
-                })
+            _logger.LogError(ex, "R3 UnhandledException")
         );
     }
 }
