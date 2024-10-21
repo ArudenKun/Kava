@@ -1,0 +1,53 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Windows.Markup;
+using JetBrains.Annotations;
+using Kava.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.Hosting;
+
+/// <summary>
+/// Extension methods for configuring WPF application lifetimes.
+/// </summary>
+[PublicAPI]
+public static class WpfApplicationLifetimeExtensions
+{
+    /// <summary>
+    /// Configures the host to use WPF application lifetime.
+    /// Also configures the <typeparamref name="TApplication"/> as a singleton.
+    /// </summary>
+    /// <typeparam name="TApplication">The type of WPF <see cref="Application"/> to manage.</typeparam>
+    public static IServiceCollection AddWpfApplication<
+        [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApplication
+    >(this IServiceCollection services)
+        where TApplication : Application =>
+        services
+            .AddSingleton(provider =>
+            {
+                // Most markup-related types invoke InitializeComponent from their constructor.
+                // For some completely unknown reason, WPF application components normally do *not*. For those components, you must explicitly call InitializeComponent after construction.
+                // Who knows why. It's just an annoying inconsistency.
+                // Naturally, InitializeComponent *must* be called. And must *not* be called twice. And there's no way to tell whether it's been called.
+                // Sigh.
+                var instance = ActivatorUtilities.CreateInstance<TApplication>(provider);
+                // ReSharper disable once SuspiciousTypeConversion.Global
+                (instance as IComponentConnector)?.InitializeComponent();
+                return instance;
+            })
+            .AddSingleton<IHostLifetime, WpfApplicationLifetime<TApplication>>();
+
+    /// <summary>
+    /// Runs the WPF application along with the .NET generic host.
+    /// </summary>
+    /// <typeparam name="TApplication">The type of the WPF <see cref="Application"/> to run.</typeparam>
+    public static void RunWpfApplication<TApplication>(this IHost host)
+        where TApplication : Application
+    {
+        _ = host ?? throw new ArgumentNullException(nameof(host));
+        var application = host.Services.GetRequiredService<TApplication>();
+        var hostTask = host.RunAsync();
+        Environment.ExitCode = application.Run();
+        hostTask.GetAwaiter().GetResult();
+    }
+}
