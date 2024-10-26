@@ -10,5 +10,5 @@ public interface IKeyed
     /// <summary>
     /// Gets or sets the unique identifier for the property.
     /// </summary>
-    Ulid Id { get; set; }
+    Guid Id { get; set; }
 }

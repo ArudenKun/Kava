@@ -1,13 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Avalonia;
+﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace Kava.Services.Hosting;
+namespace Kava.Hosting;
 
 public sealed class AvaloniaApplicationLifetime<TApplication> : IHostLifetime
     where TApplication : Application
@@ -32,7 +29,7 @@ public sealed class AvaloniaApplicationLifetime<TApplication> : IHostLifetime
     public async Task WaitForStartAsync(CancellationToken cancellationToken)
     {
         var ready = new TaskCompletionSource<object>();
-        using var registration = cancellationToken.Register(
+        await using var registration = cancellationToken.Register(
             () => ready.TrySetCanceled(cancellationToken)
         );
 

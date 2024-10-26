@@ -7,7 +7,7 @@ namespace Kava.Generators.Sources.ObservableEvents;
 /// <summary>
 /// Roslyn 40 generator for geneating events.
 /// </summary>
-// [Generator(LanguageNames.CSharp)]
+[Generator(LanguageNames.CSharp)]
 public class Generator : IIncrementalGenerator
 {
     /// <inheritdoc/>

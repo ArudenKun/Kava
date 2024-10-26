@@ -3,12 +3,20 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Kava.Generators.Attributes;
 using Kava.ViewModels.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Kava;
 
 [StaticViewLocator]
 public sealed partial class ViewLocator
 {
+    private readonly IServiceProvider _serviceProvider;
+
+    public ViewLocator(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+    }
+
     public Control? Build(object? viewModel)
     {
         if (viewModel is null)
@@ -16,10 +24,15 @@ public sealed partial class ViewLocator
 
         var viewModelType = viewModel.GetType();
 
-        if (!ViewMap.TryGetValue(viewModelType, out var factory))
+        // if (!ViewMap.TryGetValue(viewModelType, out var factory))
+        //     return new TextBlock { Text = $"No view registered for {viewModelType.FullName}" };
+        if (!ViewMapTypes.TryGetValue(viewModelType, out var viewType))
+        {
             return new TextBlock { Text = $"No view registered for {viewModelType.FullName}" };
+        }
 
-        var control = factory(viewModel);
+        var control = (Control)_serviceProvider.GetRequiredService(viewType);
+        control.DataContext = viewModel;
         RegisterEvents((IViewModel)viewModel, control);
         return control;
     }
@@ -36,12 +49,12 @@ public sealed partial class ViewLocator
 
         void Loaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.OnLoaded();
+            viewModel?.Activate();
         }
 
         void Unloaded(object? sender, RoutedEventArgs e)
         {
-            viewModel?.OnUnloaded();
+            viewModel?.Deactivate();
 
             control.Loaded -= Loaded;
             control.Unloaded -= Unloaded;

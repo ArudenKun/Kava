@@ -11,6 +11,6 @@ public interface IViewModel
 {
     event Action Loaded;
     event Action Unloaded;
-    void OnLoaded();
-    void OnUnloaded();
+    void Activate();
+    void Deactivate();
 }

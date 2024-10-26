@@ -1,18 +1,21 @@
 ﻿using Cogwheel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using Kava.Services.Abstractions;
+using Kava.Utilities.Helpers;
 using SukiUI.Enums;
 
 namespace Kava.Services;
 
 [INotifyPropertyChanged]
-public sealed partial class SettingsService : SettingsBase, ISingleton
+public sealed partial class SettingsService : SettingsBase
 {
     private bool _isAutoUpdateEnabled;
     private SukiColor _color = SukiColor.Blue;
 
-    public SettingsService(string settingsFilePath)
-        : base(settingsFilePath, AppJsonContext.Default.Options) { }
+    public SettingsService()
+        : base(
+            EnvironmentHelper.AppDataDirectory.JoinPath("settings.json"),
+            KavaJsonContext.Default.Options
+        ) { }
 
     public bool IsAutoUpdateEnabled
     {

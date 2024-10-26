@@ -1,28 +1,22 @@
-﻿namespace Kava.Utilities.Extensions;
+﻿using System;
+using System.Linq;
+using JetBrains.Annotations;
+
+namespace Kava.Utilities.Extensions;
 
 internal static class StringExtensions
 {
-    /// <summary>
-    /// Retrieves the first token of a string by splitting it at the specified character.
-    /// </summary>
-    /// <param name="s">The string to split.</param>
-    /// <param name="splitChar">The character used to split the string.</param>
-    /// <returns>The first token of the string or the whole string if the split character is not found.</returns>
-    public static string FirstToken(this string s, char splitChar)
-    {
-        var idx = s.IndexOf(splitChar);
-        return idx != -1 ? s.Substring(0, idx) : s;
-    }
+    private const string AlphanumericChars =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    /// <summary>
-    /// Returns the last token in a string, given a split character.
-    /// </summary>
-    /// <param name="s"></param>
-    /// <param name="splitChar"></param>
-    /// <returns></returns>
-    public static string LastToken(this string s, char splitChar)
+    public static char[] ValidAlphanumerics => AlphanumericChars.ToArray();
+
+    public static string RandomizeSequence(string str, [NonNegativeValue] int rolls = 0)
     {
-        var idx = s.LastIndexOf(splitChar);
-        return idx != -1 ? s.Substring(idx + 1) : s;
+        var result = Rearrange(str);
+        Lambda.Repeat(rolls, () => result = Rearrange(result));
+        return result;
+
+        string Rearrange(string s) => string.Join("", s.OrderBy(_ => Guid.NewGuid()));
     }
 }

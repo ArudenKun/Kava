@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using Kava.Services.Abstractions.Factories;
-using Kava.Services.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Kava.Services;
+namespace Kava.Services.Factories;
 
-public static class ServiceCollectionExtensions
+public static class FactoryExtensions
 {
     public static IServiceCollection AddFactory<
         TService,

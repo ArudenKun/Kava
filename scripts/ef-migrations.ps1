@@ -11,5 +11,4 @@ $hashString = [BitConverter]::ToString($hashBytes) -replace '-', '' # Remove das
 $hashString = $hashString.Substring(0, 8)
 
 dotnet ef migrations add "Model-$hashString" -o "Data\Migrations"
-dotnet ef dbcontext optimize -o "Data\Compiled"
 dotnet ef database update

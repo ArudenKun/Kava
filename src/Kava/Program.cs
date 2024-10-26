@@ -1,13 +1,15 @@
 ﻿using System;
-using System.Runtime.Versioning;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 using Avalonia;
 using CommunityToolkit.Mvvm.Messaging;
-using Humanizer;
+using FreeSql;
 using JetBrains.Annotations;
-using Kava.Data;
-using Kava.Services.Abstractions;
-using Kava.Services.Hosting;
+using Kava.Hosting;
+using Kava.Services;
 using Kava.Utilities.Helpers;
+using Kava.ViewModels.Abstractions;
+using Kava.Views;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -24,30 +26,69 @@ internal static partial class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    [SupportedOSPlatform("windows")]
-    [SupportedOSPlatform("macos")]
-    [SupportedOSPlatform("linux")]
+    [RequiresUnreferencedCode(
+        "Calls Microsoft.Extensions.DependencyInjection.EntityFrameworkServiceCollectionExtensions.AddDbContextFactory<TContext>(Action<DbContextOptionsBuilder>, ServiceLifetime)"
+    )]
     public static void Main(string[] args)
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = new HostApplicationBuilder(args);
 
-        builder.Environment.EnvironmentName = IsDebug
-            ? Environments.Development
-            : Environments.Production;
+#if DEBUG
+        builder.Environment.EnvironmentName = Environments.Development;
+#endif
 
-        builder.Services.Configure<HostOptions>(options =>
-            options.ServicesStartConcurrently = true
+        builder.Services.AddAvaloniaDesktopApplication<App, MainWindow>(
+            (sp, appBuilder) =>
+                appBuilder
+                    .UsePlatformDetect()
+                    .UseR3(ex =>
+                        sp.GetRequiredService<ILogger<App>>().LogError(ex, "R3 Unhandled Exception")
+                    )
+                    .LogToTrace(),
+            options =>
+            {
+                options.Args = args;
+            }
         );
+        builder.Services.AddSerilog(
+            (sp, loggingConfiguration) =>
+            {
+                const string template =
+                    "[{Timestamp:yyyy-MM-dd HH:mm:ss} {SourceContext} {Level:u3}] {Message:lj}{NewLine}{Exception}";
 
-        builder.Services.AddGeneratedServices();
-        builder.Services.AddAvaloniaDesktopApplication<App>(appBuilder =>
-            appBuilder.UsePlatformDetect().LogToTrace()
+                loggingConfiguration.MinimumLevel.ControlledBy(
+                    sp.GetRequiredService<LoggingLevelSwitch>()
+                );
+                loggingConfiguration.WriteTo.Console(outputTemplate: template);
+                loggingConfiguration.WriteTo.Async(x =>
+                    x.PersistentFile(
+                        EnvironmentHelper.AppDataDirectory.JoinPath("logs", "logs.log"),
+                        outputTemplate: template,
+                        persistentFileRollingInterval: PersistentFileRollingInterval.Day,
+                        rollOnFileSizeLimit: true,
+                        retainedFileCountLimit: 61
+                    )
+                );
+                loggingConfiguration.Enrich.FromLogContext();
+            }
         );
-        builder.Services.AddJsonDataStorage(EnvironmentHelper.AppDataDirectory.JoinPath("data"));
+        builder.Services.AddScannedViewModels();
 
-        builder.Services.AddSingleton(AppJsonContext.Default);
-        builder.Services.AddSingleton(AppJsonContext.Default.Options);
-        builder.Services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        builder.Services.AddHostedService<StartupService>();
+
+        builder.Services.AddSingleton(sp =>
+            new FreeSqlBuilder()
+                .UseConnectionString(
+                    DataType.Sqlite,
+                    $"Data Source={EnvironmentHelper.AppDataDirectory.JoinPath("data.db")}"
+                )
+                .UseAutoSyncStructure(true)
+                .UseMonitorCommand(command =>
+                    sp.GetRequiredService<ILogger<IFreeSql>>()
+                        .LogDebug("Sql: {Sql}", command.CommandText)
+                )
+                .Build()
+        );
         builder.Services.AddSingleton(
             new LoggingLevelSwitch(
                 builder.Environment.IsDevelopment()
@@ -55,78 +96,46 @@ internal static partial class Program
                     : LogEventLevel.Information
             )
         );
+        builder.Services.AddSingleton(KavaJsonContext.Default.Options);
+        builder.Services.AddSingleton<IJsonTypeInfoResolver>(KavaJsonContext.Default);
+        builder.Services.AddSingleton<IMessenger>(WeakReferenceMessenger.Default);
+        builder.Services.AddSingleton<FileAccessService>();
+        builder.Services.AddSingleton<SettingsService>();
+        builder.Services.AddSingleton<ViewLocator>();
 
-        builder.Services.AddSerilog(
-            (sp, configuration) =>
-            {
-                const string template =
-                    "[{Timestamp:HH:mm:ss} {Level:u3} {SourceContext}] {Message:lj}{NewLine}{Exception}";
-                var logPath = EnvironmentHelper.AppDataDirectory.JoinPath("logs", "logs.log");
-                configuration
-                    .MinimumLevel.ControlledBy(sp.GetRequiredService<LoggingLevelSwitch>())
-                    .Enrich.FromLogContext()
-                    .WriteTo.Console(outputTemplate: template)
-                    .WriteTo.Async(x =>
-                        x.PersistentFile(
-                            logPath,
-                            outputTemplate: template,
-                            rollOnFileSizeLimit: true,
-                            persistentFileRollingInterval: PersistentFileRollingInterval.Day,
-                            preserveLogFilename: true,
-                            fileSizeLimitBytes: (long?)1.Gigabytes().Bytes
-                        )
-                    );
-            }
-        );
-
-        using var host = builder.Build();
+        var host = builder.Build();
 
         try
         {
-            host.RunAvaloniaApplicationAsync(args);
+            host.RunAvaloniaApplicationAsync();
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            host.Services.GetRequiredService<ILogger<App>>().LogCritical(e, "An error occured");
+            host.Services.GetRequiredService<ILogger<App>>().LogError(ex, "Unhandled Exception");
 
             if (OperatingSystem.IsWindows())
             {
-                _ = OSNativeHelper.Windows.ErrorMessageBox("Kava Fatal Error", e.ToString());
+                _ = OSNativeHelper.Windows.ErrorMessageBox("Kava Fatal Error", ex.ToString());
             }
 
             throw;
+        }
+        finally
+        {
+            host.Dispose();
         }
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
     [UsedImplicitly]
     public static AppBuilder BuildAvaloniaApp() =>
-        AppBuilder.Configure(() => new Application()).UsePlatformDetect().LogToTrace();
+        AppBuilder.Configure<Application>().UsePlatformDetect().LogToTrace();
 
     [GenerateServiceRegistrations(
-        AssignableTo = typeof(ISingleton),
-        Lifetime = ServiceLifetime.Singleton,
-        AsSelf = true,
-        AsImplementedInterfaces = true
-    )]
-    [GenerateServiceRegistrations(
-        AssignableTo = typeof(IScoped),
-        Lifetime = ServiceLifetime.Scoped,
-        AsSelf = true,
-        AsImplementedInterfaces = true
-    )]
-    [GenerateServiceRegistrations(
-        AssignableTo = typeof(ITransient),
+        AssignableTo = typeof(IViewModel),
         Lifetime = ServiceLifetime.Transient,
         AsSelf = true,
         AsImplementedInterfaces = true
     )]
-    private static partial void AddGeneratedServices(this IServiceCollection serviceProvider);
-
-    private static bool IsDebug
-#if DEBUG
-        => true;
-#else
-        => false;
-#endif
+    private static partial void AddScannedViewModels(this IServiceCollection services);
 }

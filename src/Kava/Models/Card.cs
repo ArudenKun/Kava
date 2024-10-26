@@ -1,18 +1,23 @@
 ﻿using System;
-using Kava.Data.Abstractions;
+using System.Collections.Generic;
+using FreeSql.DataAnnotations;
+using Kava.Models.Abstractions;
 
 namespace Kava.Models;
 
 public class Card : BaseEntity
 {
-    public Card() { }
+    [Column(StringLength = 64)]
+    public required string Name { get; set; }
 
-    public Card(string name)
-    {
-        Name = name;
-    }
+    [Column(StringLength = -1)]
+    public string Description { get; set; } = string.Empty;
 
-    public string Name { get; set; } = string.Empty;
+    [Navigate(nameof(Entry.CardId))]
+    public List<Entry> Cards { get; set; } = [];
 
-    public Ulid CategoryId { get; set; }
+    public required Guid BoardId { get; set; }
+
+    [Navigate(nameof(BoardId))]
+    public Board? Board { get; init; }
 }

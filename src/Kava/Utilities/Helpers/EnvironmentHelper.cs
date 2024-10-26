@@ -1,12 +1,5 @@
 ﻿using System;
 using System.Globalization;
-using System.IO;
-using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Platform.Storage;
-using Flurl;
-using Kava.Utilities.Extensions;
-using Kava.Utilities.Extensions.Avalonia;
 
 namespace Kava.Utilities.Helpers;
 
@@ -15,12 +8,14 @@ public static class EnvironmentHelper
     /// <summary>
     ///     Returns the version of executing assembly.
     /// </summary>
-    public static Version AppVersion => new(ThisAssembly.Info.Version);
+    public static Version AppVersion =>
+        typeof(EnvironmentHelper).Assembly.GetName().Version ?? new Version();
 
     /// <summary>
     ///     Returns the friendly name of this application.
     /// </summary>
-    public static string AppName => ThisAssembly.Info.Title;
+    public static string AppName =>
+        typeof(EnvironmentHelper).Assembly.GetName().Name ?? string.Empty;
 
     /// <summary>
     ///     Returns the path of the ApplicationData.

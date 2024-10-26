@@ -38,7 +38,8 @@ public sealed class StaticViewLocatorGenerator
         var viewModelSymbols = compilation
             .GlobalNamespace.CollectTypeSymbols(targetSymbol)
             .Where(x => !x.IsAbstract)
-            .OrderBy(x => x.ToDisplayString());
+            .OrderBy(x => x.ToDisplayString())
+            .ToArray();
 
         var source = new SourceStringBuilder(symbol);
 
@@ -53,20 +54,42 @@ public sealed class StaticViewLocatorGenerator
             "IDataTemplate",
             () =>
             {
+                var count = viewModelSymbols
+                    .Select(viewModelSymbol => GetView(viewModelSymbol, compilation))
+                    .OfType<INamedTypeSymbol>()
+                    .Count();
+
                 source.Line(
-                    "public static Dictionary<Type, Func<object, Control>> ViewMap { get; } = new()"
+                    $"public static IReadOnlyDictionary<Type, Func<object, Control>> ViewMap {{ get; }} = new Dictionary<Type, Func<object, Control>>({count})"
                 );
                 source.BlockDecl(() =>
                 {
                     foreach (var viewModelSymbol in viewModelSymbols)
                     {
-                        var view = GetView(viewModelSymbol, compilation);
+                        var viewSymbol = GetView(viewModelSymbol, compilation);
 
-                        if (view is null)
+                        if (viewSymbol is null)
                             continue;
 
                         source.Line(
-                            $"[typeof({viewModelSymbol.ToFullDisplayString()})] = (viewModel) => new {view.ToFullDisplayString()}() {{ ViewModel = ({viewModelSymbol.ToFullDisplayString()})viewModel }},"
+                            $"[typeof({viewModelSymbol.ToFullDisplayString()})] = (viewModel) => new {viewSymbol.ToFullDisplayString()}() {{ ViewModel = ({viewModelSymbol.ToFullDisplayString()})viewModel }},"
+                        );
+                    }
+                });
+
+                source.Line(
+                    $"public static IReadOnlyDictionary<Type, Type> ViewMapTypes {{ get; }} = new Dictionary<Type, Type>({count})"
+                );
+                source.BlockDecl(() =>
+                {
+                    foreach (var viewModelSymbol in viewModelSymbols)
+                    {
+                        var viewSymbol = GetView(viewModelSymbol, compilation);
+
+                        if (viewSymbol is null)
+                            continue;
+                        source.Line(
+                            $"[typeof({viewModelSymbol.ToFullDisplayString()})] = typeof({viewSymbol.ToFullDisplayString()}),"
                         );
                     }
                 });
