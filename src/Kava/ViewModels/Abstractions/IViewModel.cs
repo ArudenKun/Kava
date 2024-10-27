@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using Kava.Hosting.Abstractions;
 
 namespace Kava.ViewModels.Abstractions;
 
@@ -7,10 +8,13 @@ public interface IViewModel
     : IDisposable,
         INotifyPropertyChanged,
         INotifyPropertyChanging,
-        INotifyDataErrorInfo
+        INotifyDataErrorInfo,
+        IActivable
 {
     event Action Loaded;
     event Action Unloaded;
-    void Activate();
-    void Deactivate();
 }
+
+public interface ISingletonViewModel : IViewModel;
+
+public interface ITransientViewModel : IViewModel;

@@ -14,7 +14,7 @@ if (Test-Path $publishFolderPath) {
 }
 
 # Publish the project to the publish folder
-dotnet publish "src\Kava" -o $publishFolderPath
+dotnet publish "src\Kava.Windows" -o $publishFolderPath
 
 # Return to the original directory
 Set-Location -Path $currentDir

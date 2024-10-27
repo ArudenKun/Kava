@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using FreeSql.DataAnnotations;
+using Kava.Core.Helpers;
 using Kava.Models.Abstractions;
-using Kava.Utilities.Helpers;
 
 namespace Kava.Models;
 
@@ -10,7 +9,6 @@ public class Attachment : BaseEntity
 {
     private string _fileName;
 
-    [Column(StringLength = 128)]
     public required string FileName
     {
         get => _fileName;
@@ -31,6 +29,5 @@ public class Attachment : BaseEntity
 
     public required Guid EntryId { get; set; }
 
-    [Navigate(nameof(EntryId))]
     public Entry? Entry { get; init; }
 }

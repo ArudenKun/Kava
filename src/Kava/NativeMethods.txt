@@ -1,5 +1,0 @@
-﻿AllocConsole
-FreeConsole
-GetConsoleWindow
-ShowWindow
-MessageBox

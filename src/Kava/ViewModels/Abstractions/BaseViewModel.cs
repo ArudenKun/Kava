@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using AsyncAwaitBestPractices;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
-using R3;
+using Kava.Core.Utilities;
 using SukiUI.Dialogs;
 using SukiUI.Toasts;
 
@@ -43,10 +43,10 @@ public abstract partial class BaseViewModel : ObservableValidator, IViewModel
 
     protected virtual void OnUnLoaded() { }
 
-    public static ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
-    public static ISukiToastManager ToastManager { get; } = new SukiToastManager();
+    public ISukiDialogManager DialogManager { get; } = new SukiDialogManager();
+    public ISukiToastManager ToastManager { get; } = new SukiToastManager();
 
-    public CompositeDisposable Subscriptions { get; } = new();
+    public DisposableCollector Subscriptions { get; } = new();
 
     protected static void Dispatch(Action action) => Dispatcher.UIThread.Invoke(action);
 

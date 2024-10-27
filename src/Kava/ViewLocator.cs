@@ -1,7 +1,7 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Interactivity;
 using Kava.Generators.Attributes;
+using Kava.Hosting;
 using Kava.ViewModels.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,31 +33,9 @@ public sealed partial class ViewLocator
 
         var control = (Control)_serviceProvider.GetRequiredService(viewType);
         control.DataContext = viewModel;
-        RegisterEvents((IViewModel)viewModel, control);
+        ActivatableActivator.RegisterEvents((IViewModel)viewModel, control);
         return control;
     }
 
     public bool Match(object? data) => data is IViewModel;
-
-    private static void RegisterEvents(IViewModel viewModel, Control control)
-    {
-        control = control ?? throw new ArgumentNullException(nameof(control));
-
-        control.Loaded += Loaded;
-        control.Unloaded += Unloaded;
-        return;
-
-        void Loaded(object? sender, RoutedEventArgs e)
-        {
-            viewModel?.Activate();
-        }
-
-        void Unloaded(object? sender, RoutedEventArgs e)
-        {
-            viewModel?.Deactivate();
-
-            control.Loaded -= Loaded;
-            control.Unloaded -= Unloaded;
-        }
-    }
 }
